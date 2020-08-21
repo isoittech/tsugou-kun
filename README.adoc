@@ -1,0 +1,66 @@
+= Tsugou-kun
+
+[%hardbreaks]
+調整さん（https://chouseisan.com/）のパクりサービス
+
+== ■開発メモ
+
+== ■環境構築
+
+=== ▼PyEnv
+
+```
+cd <<ココ>>
+
+conda create --prefix=.\pyenv python==3.7
+```
+
+=== ▼Activate
+
+```
+activate ./pyenv
+or source activate ./pyenv
+or conda activate ./.pyenv
+```
+
+=== ▼Package Install
+
+```
+conda install -y django==2.2 sqlparse
+```
+
+=== ▼アプリ初期構築（1画面）・起動確認
+
+```
+django-admin startproject app .
+python manage.py startapp home # トップページ
+python manage.py runserver # 起動確認（http://localhost:8000/）
+```
+
+=== ▼DB構築
+
+==== ◎新規データベース構築
+
+[%hardbreaks]
+・`db/README.adoc` 参照
+・IDは`admin` 、PWはアプリ名で。
+
+==== ◎テーブル作成
+
+・`db/create.sql` に記載のSQLを実行する。
+
+==== ◎DBライブラリ追加設定
+
+[%hardbreaks]
+・環境変数 `PGGSSENCMODE` に `disable` を設定する。
+そうしないと下記のようなエラーが出る場合がある。
+
+```
+psycopg2.OperationalError: received invalid response to GSSAPI negotiation: R
+```
+
+==== ◎DBクライアント設定
+
+[%hardbreaks]
+H2なので下記のように設定する。
+`jdbc:h2:tcp://localhost:5454/./byebyekun`
