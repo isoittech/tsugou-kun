@@ -37,6 +37,25 @@ python manage.py startapp home # トップページ
 python manage.py runserver # 起動確認（http://localhost:8000/）
 ```
 
+=== ▼Herokuデプロイ準備・初回処理
+
+```
+echo web: gunicorn tsugou-kun.wsgi --log-file - > Procfile
+echo python-3.7.0 > runtime.txt
+pip install django-heroku gunicorn
+pip freeze > requirements.txt
+
+vi app/settings.py
+--------------------------
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+--------------------------
+
+<<git commit, push>>
+heroku login
+
+```
+
 === ▼DB構築
 
 ==== ◎新規データベース構築
