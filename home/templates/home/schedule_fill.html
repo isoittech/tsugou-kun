@@ -1,6 +1,6 @@
 {% extends "home/base.html" %}
 
-{% block title %}イベント追加 - 都合くん「この日空いてますか。」{% endblock title %}
+{% block title %}参加可否記入 - 都合くん「この日空いてますか。」{% endblock title %}
 
 {% block content %}
 <form action="{% url 'home:event_add' %}" method="post">
@@ -74,6 +74,7 @@
 				}
 			});
 	});
+
 
 </script>
 {% endblock content %}
