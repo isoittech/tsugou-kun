@@ -1,0 +1,79 @@
+{% extends "home/base.html" %}
+
+{% block title %}都合くん - この日空いてますか。{% endblock title %}
+
+{% block content %}
+<form action="" method="post">
+    <div class="form-group">
+        <label for="eventName">イベント名</label>
+        <input type="text" class="form-control" id="eventName" placeholder="イベント名">
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-6">
+            <div class="form-group">
+                <label for="eventDateTime">候補日時</label>
+                <textarea class="form-control" id="eventDateTime" rows="5"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="memo">イベントメモ</label>
+                <textarea class="form-control" id="memo" rows="5"></textarea>
+            </div>
+
+        </div>
+        <div class="form-group col-md-6">
+            <label for="eventDateTimeCalendar">カレンダー</label>
+            <div id="eventDateTimeCalendar"></div>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">出欠表を作る</button>
+
+</form>
+<script>
+	$(function () {
+            var numberOfMonths;
+            if (window.matchMedia && window.matchMedia('(max-device-width: 640px)').matches) {
+                // smartphone
+                numberOfMonths = 1;
+            } else {
+                // pc
+                numberOfMonths = 2;
+            }
+
+			$("#eventDateTimeCalendar").datepicker({
+			    dateFormat: "m/d(DD)",
+				firstDay: 0,
+				yearSuffix: '年',
+				showMonthAfterYear: true,
+				monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+				dayNames: ['日', '月', '火', '水', '木', '金', '土'],
+				dayNamesMin: ['日', '月', '火', '水', '木', '金', '土'],
+				minDate: new Date(),
+				maxDate: '+12m',
+				hideIfNoPrevNext: true,
+                todayHighlight: true,
+                multidate: true,
+                numberOfMonths: numberOfMonths,
+
+                onSelect: function (dateText, inst) {
+					var nowText = $("#eventDateTime").val();
+
+					if (nowText === "") {
+						$("#eventDateTime").val(dateText + " 19:00〜");
+					}
+					else {
+						$("#eventDateTime").val(nowText + "\n" + dateText + " 19:00〜");
+					}
+				}
+			});
+	});
+
+
+
+
+
+
+
+
+</script>
+{% endblock content %}

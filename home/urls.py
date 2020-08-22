@@ -5,5 +5,9 @@ from . import views
 app_name = 'home'
 
 urlpatterns = [
+    path('event/', views.event_list, name='event_list'),  # 一覧
+    path('event/add/', views.event_edit, name='event_add'),  # 登録
+    path('event/mod/<int:event_id>/', views.event_edit, name='event_mod'),  # 修正
+    path('event/del/<int:event_id>/', views.event_del, name='event_del'),  # 削除
     path('', views.index, name='index'),
 ]

@@ -1,0 +1,29 @@
+{% load i18n static %}
+<!DOCTYPE html>{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE|default:" en-us" }}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="stylesheet" href="{% static 'home/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/pepper-grinder/jquery-ui.css">
+    <!--    <link rel="stylesheet" href="{% static 'home/css/jquery-ui.css' %}">-->
+    <!--    <link rel="stylesheet" href="{% static 'home/css/bootstrap-datepicker3.min.css' %}">-->
+    <script src="{% static 'home/js/jquery-3.5.1.min.js' %}"></script>
+    <script src="{% static 'home/js/popper.min.js' %}"></script>
+    <script src="{% static 'home/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static 'home/js/jquery-ui.min.js' %}"></script>
+    <script src="{% static 'home/js/datepicker-ja.js' %}"></script>
+    <!--    <script src="{% static 'home/js/bootstrap-datepicker.min.js' %}"></script>-->
+    <!--    <script src="{% static 'home/locales/bootstrap-datepicker.ja.min.js' %}"></script>-->
+    {% block extra_css %}{% endblock %}
+    <title>{% block title %}My events{% endblock %}</title>
+</head>
+<body>
+<div class="container">
+    {% block content %}
+    {{ content }}
+    {% endblock %}
+</div>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

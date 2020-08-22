@@ -10,50 +10,103 @@
 === ▼PyEnv
 
 ```
-cd <<ココ>>
+$ cd <<ココ>>
 
-conda create --prefix=.\pyenv python==3.7
+$ conda create --prefix=.\pyenv python==3.7
 ```
 
 === ▼Activate
 
 ```
-activate ./pyenv
-or source activate ./pyenv
-or conda activate ./.pyenv
+$ activate ./pyenv
+or $ source activate ./pyenv
+or $ conda activate ./.pyenv
 ```
 
 === ▼Package Install
 
 ```
-conda install -y django==2.2 sqlparse
+$ conda install -y django==2.2 sqlparse psycopg2 psycopg2-binary sqlalchemy
+$ pip install --no-input django-bootstrap4
+
 ```
 
 === ▼アプリ初期構築（1画面）・起動確認
 
 ```
-django-admin startproject app .
-python manage.py startapp home # トップページ
-python manage.py runserver # 起動確認（http://localhost:8000/）
+$ django-admin startproject app .
+$ python manage.py startapp home # トップページ
+$ python manage.py runserver # 起動確認（http://localhost:8000/）
 ```
 
-=== ▼Herokuデプロイ準備・初回処理
+=== ▼★ボツ（AWSでやるので。）★Herokuデプロイ準備・初回処理
 
 ```
-echo web: gunicorn tsugou-kun.wsgi --log-file - > Procfile
-echo python-3.7.0 > runtime.txt
-pip install django-heroku gunicorn
-pip freeze > requirements.txt
+$ echo web: gunicorn tsugou-kun.wsgi --log-file - > Procfile
+$ echo python-3.7.0 > runtime.txt
+$ pip install django-heroku gunicorn
+$ pip freeze > requirements.txt
 
-vi app/settings.py
+$ vi app/settings.py
 --------------------------
 DEBUG = False
 ALLOWED_HOSTS = ['*']
 --------------------------
 
 <<git commit, push>>
-heroku login
+$ heroku login
 
+```
+
+=== ▼DB設定・初期構築
+
+//* 事前にDBを起動する。
+//* 設定ファイルにPostgres設定を行う。
+//+
+//```
+//# settings.py
+//DATABASES = {
+//    'default': {
+//        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+//        'NAME': './tsugoukun',
+//        'USER': 'tsugoukun',
+//        'PASSWORD': 'XXXXX',
+//        'HOST': 'localhost',
+//        'PORT': '5435',
+//    }
+//}
+//```
+
+* 設定ファイルにロケール設定を行う。
++
+```
+# settings.py
+LANGUAGE_CODE = 'ja'
+TIME_ZONE = 'Asia/Tokyo'
+```
+
+* 初回マイグレーション
++
+```
+//export PGGSSENCMODE=disable # Postgresのときに必要。エラー回避のため
+$ python manage.py makemigrations
+$ python manage.py migrate
+```
+
+* スーパユーザ作成
++
+```
+$ python manage.py createsuperuser
+
+ユーザー名 (leave blank to use 'isomu'): admin
+メールアドレス: admin@ad.min
+Password:
+Password (again):
+このパスワードは ユーザー名 と似すぎています。
+このパスワードは短すぎます。最低 8 文字以上必要です。
+このパスワードは一般的すぎます。
+Bypass password validation and create user anyway? [y/N]: y
+Superuser created successfully.
 ```
 
 === ▼DB構築
@@ -62,7 +115,12 @@ heroku login
 
 [%hardbreaks]
 ・`db/README.adoc` 参照
-・IDは`admin` 、PWはアプリ名で。
+・IDは`tsugoukun` 、PWもアプリ名で。
+
+==== ◎DB起動
+
+* db/に移動
+* ./h2.shを実行
 
 ==== ◎テーブル作成
 
@@ -82,4 +140,26 @@ psycopg2.OperationalError: received invalid response to GSSAPI negotiation: R
 
 [%hardbreaks]
 H2なので下記のように設定する。
-`jdbc:h2:tcp://localhost:5454/./byebyekun`
+`jdbc:h2:tcp://localhost:5454/./tsugoukun`
+
+==== ◎モデル変更時作業
+
+```
+$ python manage.py makemigrations <<アプリ名。homeとか>>
+
+# 実行されるSQLの確認コマンド
+$ python manage.py sqlmigrate home <<マイグレーション番号（0001とか）>>
+
+# マイグレ実行
+$ python manage.py migrate home
+
+# 追加テーブルを管理サイト上で編集可能にする
+home/admin.py に、管理サイトへ表示したいモデルを追加する。
+-------------------------------------
+from django.contrib import admin
+from home.models import <<追加するモデルクラス名たち>>
+
+admin.site.register(<<追加するモデルクラス名>>)
+admin.site.register(<<追加するモデルクラス名>>)
+-------------------------------------
+```
