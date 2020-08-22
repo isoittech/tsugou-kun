@@ -4,7 +4,7 @@ from home.models import Event
 
 
 class EventForm(ModelForm):
-    """書籍のフォーム"""
+    """イベントのフォーム"""
 
     class Meta:
         model = Event
