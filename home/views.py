@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 
-from home.forms import EventForm
+from home.forms import EventForm, EventFormWithDate
 from home.models import Event
 
 
@@ -9,6 +9,30 @@ def index(request):  # 追加
     events = Event.objects.all().order_by('id')
     return render(request,
                   'home/top.html',  # 使用するテンプレート
+                  {'events': events})  # テンプレートに渡すデータ
+
+
+def event_add(request):
+    """イベントの追加"""
+    # return HttpResponse('書籍の追加')
+    event = Event()
+
+    form = EventFormWithDate(request.POST, instance=event)  # POST された request データからフォームを作成
+    if form.is_valid():  # フォームのバリデーション
+        event = form.save(commit=False)
+        event.save()
+        return render(request,
+                      'home/schedule_fill.html',  # 使用するテンプレート
+                      dict(form=form, event_id=event.id))  # テンプレートに渡すデータ
+
+    return render(request, 'home/top.html', dict(form=form))
+    # return redirect('home:index')
+
+def schedule_fill(request):
+    """イベントの一覧"""
+    events = Event.objects.all().order_by('id')
+    return render(request,
+                  'home/event_list.html',  # 使用するテンプレート
                   {'events': events})  # テンプレートに渡すデータ
 
 

@@ -4,20 +4,26 @@
 
 {% block content %}
 <form action="{% url 'home:event_add' %}" method="post">
-    {% csrf_token %}
+    <div class="form-row">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+    </div>
     <div class="form-row">
         <div class="form-group col-md-6">
             <div class="form-group">
-                <label for="eventName">イベント名</label>
-                <input type="text" class="form-control" id="eventName" placeholder="イベント名">
+                {{ form.name.errors }}
+                <label for="{{ form.name.id_for_label }}">イベント名</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="イベント名">
             </div>
             <div class="form-group">
-                <label for="eventDateTime">候補日時</label>
-                <textarea class="form-control" id="eventDateTime" rows="5"></textarea>
+                {{ form.eventDatetimeKouho.errors }}
+                <label for="{{ form.eventDatetimeKouho.id_for_label }}">候補日時</label>
+                <textarea class="form-control" id="eventDatetimeKouho" name="eventDatetimeKouho" rows="5"></textarea>
             </div>
             <div class="form-group">
-                <label for="memo">イベントメモ</label>
-                <textarea class="form-control" id="memo" rows="5"></textarea>
+                {{ form.memo.errors }}
+                <label for="{{ form.memo.id_for_label }}">イベントメモ</label>
+                <textarea class="form-control" id="memo" name="memo" rows="5"></textarea>
             </div>
 
         </div>
@@ -27,8 +33,9 @@
                 <div id="eventDateTimeCalendar"></div>
             </div>
             <div class="form-group">
+
                 <label for="anshouNum">暗証番号</label>
-                <input type="password" class="form-control" id="anshouNum" placeholder="4桁の暗証番号">
+                <input type="password" class="form-control" id="anshouNum" name="anshouNum" placeholder="4桁の暗証番号">
             </div>
         </div>
     </div>
@@ -63,13 +70,13 @@
                 numberOfMonths: numberOfMonths,
 
                 onSelect: function (dateText, inst) {
-					var nowText = $("#eventDateTime").val();
+					var nowText = $("#eventDatetimeKouho").val();
 
 					if (nowText === "") {
-						$("#eventDateTime").val(dateText + " 19:00〜");
+						$("#eventDatetimeKouho").val(dateText + " 19:00〜");
 					}
 					else {
-						$("#eventDateTime").val(nowText + "\n" + dateText + " 19:00〜");
+						$("#eventDatetimeKouho").val(nowText + "\n" + dateText + " 19:00〜");
 					}
 				}
 			});
