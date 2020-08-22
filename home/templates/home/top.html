@@ -1,15 +1,16 @@
 {% extends "home/base.html" %}
 
-{% block title %}都合くん - この日空いてますか。{% endblock title %}
+{% block title %}都合くん - 「この日空いてますか。」{% endblock title %}
 
 {% block content %}
-<form action="" method="post">
-    <div class="form-group">
-        <label for="eventName">イベント名</label>
-        <input type="text" class="form-control" id="eventName" placeholder="イベント名">
-    </div>
+<form action="{% url 'home:event_add' %}" method="post">
+    {% csrf_token %}
     <div class="form-row">
         <div class="form-group col-md-6">
+            <div class="form-group">
+                <label for="eventName">イベント名</label>
+                <input type="text" class="form-control" id="eventName" placeholder="イベント名">
+            </div>
             <div class="form-group">
                 <label for="eventDateTime">候補日時</label>
                 <textarea class="form-control" id="eventDateTime" rows="5"></textarea>
@@ -21,8 +22,14 @@
 
         </div>
         <div class="form-group col-md-6">
-            <label for="eventDateTimeCalendar">カレンダー</label>
-            <div id="eventDateTimeCalendar"></div>
+            <div class="form-group">
+                <label for="eventDateTimeCalendar">カレンダー</label>
+                <div id="eventDateTimeCalendar"></div>
+            </div>
+            <div class="form-group">
+                <label for="anshouNum">暗証番号</label>
+                <input type="password" class="form-control" id="anshouNum" placeholder="4桁の暗証番号">
+            </div>
         </div>
     </div>
 
@@ -67,13 +74,6 @@
 				}
 			});
 	});
-
-
-
-
-
-
-
 
 </script>
 {% endblock content %}
