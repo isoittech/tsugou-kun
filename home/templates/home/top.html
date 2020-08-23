@@ -11,19 +11,20 @@
     <div class="form-row">
         <div class="form-group col-md-6">
             <div class="form-group">
-                {{ form.name.errors }}
                 <label for="{{ form.name.id_for_label }}">イベント名</label>
                 <input type="text" class="form-control" id="name" name="name" placeholder="イベント名">
+                {{ form.name.errors }}
             </div>
             <div class="form-group">
-                {{ form.eventDatetimeKouho.errors }}
-                <label for="{{ form.eventDatetimeKouho.id_for_label }}">候補日時</label>
-                <textarea class="form-control" id="eventDatetimeKouho" name="eventDatetimeKouho" rows="5"></textarea>
+                <label for="{{ form.event_datetime_kouho.id_for_label }}">イベント日時候補</label>
+                <textarea class="form-control" id="event_datetime_kouho" name="event_datetime_kouho"
+                          rows="5"></textarea>
+                {{ form.event_datetime_kouho.errors }}
             </div>
             <div class="form-group">
-                {{ form.memo.errors }}
                 <label for="{{ form.memo.id_for_label }}">イベントメモ</label>
                 <textarea class="form-control" id="memo" name="memo" rows="5"></textarea>
+                {{ form.memo.errors }}
             </div>
 
         </div>
@@ -33,9 +34,9 @@
                 <div id="eventDateTimeCalendar"></div>
             </div>
             <div class="form-group">
-
-                <label for="anshouNum">暗証番号</label>
-                <input type="password" class="form-control" id="anshouNum" name="anshouNum" placeholder="4桁の暗証番号">
+                <label for="anshou_num">暗証番号</label>
+                <input type="password" class="form-control" id="anshou_num" name="anshou_num" placeholder="4桁の暗証番号">
+                {{ form.anshou_num.errors }}
             </div>
         </div>
     </div>
@@ -70,13 +71,13 @@
                 numberOfMonths: numberOfMonths,
 
                 onSelect: function (dateText, inst) {
-					var nowText = $("#eventDatetimeKouho").val();
+					var nowText = $("#event_datetime_kouho").val();
 
 					if (nowText === "") {
-						$("#eventDatetimeKouho").val(dateText + " 19:00〜");
+						$("#event_datetime_kouho").val(dateText + " 19:00〜");
 					}
 					else {
-						$("#eventDatetimeKouho").val(nowText + "\n" + dateText + " 19:00〜");
+						$("#event_datetime_kouho").val(nowText + "\n" + dateText + " 19:00〜");
 					}
 				}
 			});

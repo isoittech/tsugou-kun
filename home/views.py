@@ -1,25 +1,25 @@
 from django.shortcuts import render, get_object_or_404, redirect
 
-from home.forms import EventForm, EventFormWithDate
-from home.models import Event
+from home.forms import EventForm
+from home.models import Event, EventKouhoNichiji
 
 
 def index(request):  # 追加
     """イベントの一覧"""
     events = Event.objects.all().order_by('id')
     return render(request,
-                  'home/top.html',  # 使用するテンプレート
-                  {'events': events})  # テンプレートに渡すデータ
+                  'home/top.html')
 
 
 def event_add(request):
     """イベントの追加"""
-    # return HttpResponse('書籍の追加')
     event = Event()
+    eventKouhoNichiji = EventKouhoNichiji()
 
-    form = EventFormWithDate(request.POST, instance=event)  # POST された request データからフォームを作成
+    form = EventForm(request.POST)  # POST された request データからフォームを作成
     if form.is_valid():  # フォームのバリデーション
         event = form.save(commit=False)
+        eventKouhoNichiji.kouho_nichiji
         event.save()
         return render(request,
                       'home/schedule_fill.html',  # 使用するテンプレート
