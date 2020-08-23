@@ -27,7 +27,7 @@ or $ conda activate ./.pyenv
 
 ```
 $ conda install -y django==2.2 sqlparse psycopg2 psycopg2-binary sqlalchemy
-$ pip install --no-input django-bootstrap4
+$ pip install --no-input django-bootstrap4 Crypto
 
 ```
 
