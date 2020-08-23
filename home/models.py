@@ -13,6 +13,7 @@ class Event(models.Model):
     name = models.CharField('イベント名', max_length=255)
     memo = models.CharField('メモ', max_length=255, blank=True)
     anshou_num = models.CharField('暗証番号', max_length=4, validators=[MinLengthValidator(4), only_intger])
+    schedule_update_id = models.CharField('スケジュール更新ID', max_length=64)
 
     def __str__(self):
         return self.name
