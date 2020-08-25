@@ -8,3 +8,14 @@
     background-color: #f8d7da;
     border-color: #f5c6cb;
 }
+
+.rightBottomFixed{
+    position:fixed;
+    right:0px;
+    bottom:10px;
+    transition:1s;
+    opacity:0.7;
+}
+.rightBottomFixed:hover{
+    opacity:1;
+}
