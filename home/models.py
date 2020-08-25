@@ -1,7 +1,5 @@
 from django.core.exceptions import ValidationError
-from django.core.validators import MinLengthValidator
 from django.db import models
-
 
 def only_intger(value):
     if value.isdigit() == False:
@@ -12,7 +10,6 @@ class Event(models.Model):
     """イベント"""
     name = models.CharField('イベント名', max_length=255)
     memo = models.CharField('メモ', max_length=255, blank=True)
-    anshou_num = models.CharField('暗証番号', max_length=4, validators=[MinLengthValidator(4), only_intger])
     schedule_update_id = models.CharField('スケジュール更新ID', max_length=64)
 
     def __str__(self):
@@ -25,7 +22,7 @@ class Event(models.Model):
 
 class EventKouhoNichiji(models.Model):
     """イベント候補日時"""
-    event = models.ForeignKey(Event, verbose_name='イベント', related_name='event_kouhobis', on_delete=models.CASCADE)
+    event = models.ForeignKey(Event, verbose_name='イベント', related_name='event_kouho_nichiji_set', on_delete=models.CASCADE)
     kouho_nichiji = models.CharField('候補日時', max_length=255)
 
     def __str__(self):
@@ -37,9 +34,13 @@ class EventKouhoNichiji(models.Model):
 
 
 class Sankasha(models.Model):
-    """参加者"""
-    event = models.ForeignKey(Event, verbose_name='イベント', related_name='event_sankashas', on_delete=models.CASCADE)
+    """
+    参加者
+    ※参加者の情報を保持する
+    """
+    event = models.ForeignKey(Event, verbose_name='イベント', related_name='sankasha_set', on_delete=models.CASCADE)
     name = models.CharField('参加者名', max_length=255)
+    comment = models.CharField('コメント', max_length=1024, blank=True)
 
     def __str__(self):
         return self.name
@@ -50,9 +51,12 @@ class Sankasha(models.Model):
 
 
 class SankaNichiji(models.Model):
-    """参加日時"""
-    sankasha = models.ForeignKey(Sankasha, verbose_name='参加者', related_name='event_sanka_nichiji', on_delete=models.CASCADE)
-    event_kouho_nichiji = models.ForeignKey(EventKouhoNichiji, verbose_name='イベント候補日時', related_name='event_sanka_nichiji', on_delete=models.CASCADE)
+    """
+    参加日時
+    ※参加者の各日時の参加可否を保持する
+    """
+    sankasha = models.ForeignKey(Sankasha, verbose_name='参加者', related_name='sankasha_sanka_nichiji_set', on_delete=models.CASCADE)
+    event_kouho_nichiji = models.ForeignKey(EventKouhoNichiji, verbose_name='イベント候補日時', related_name='event_kouho_sanka_nichiji_set', on_delete=models.CASCADE)
     sanka_kahi = models.IntegerField('参加可否')
 
     def __str__(self):

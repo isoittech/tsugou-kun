@@ -1,9 +1,22 @@
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# ■views.py
+# TODO ロギング→デコレータを利用する。
+# http://shimada-k.hateblo.jp/entry/2019/12/09/125244
+# TODO 例外ハンドラ→これもデコレータを実装する。エラーが発生したらerror.htmlへ遷移させる。
+# https://qiita.com/homines22/items/dccae65fa3434641b995
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+from urllib.parse import urlencode
+
 from django.db import transaction
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 
-from home import helpers
+from home import helpers, constants
 from home.forms import EventForm
-from home.models import Event, EventKouhoNichiji
+from home.models import Event, EventKouhoNichiji, SankaNichiji, Sankasha
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -29,17 +42,6 @@ def event_add(request):
             # ※Eventはフォームデータから作成する。
             # ===================================================
             event = form.save(commit=False)
-
-            # ===================================================
-            # 保存対象データ設定処理
-            # ===================================================
-            # ------------------------
-            # Event
-            # ------------------------
-            # 暗証番号
-            # ※暗号化して保存する。
-            encoded_anshou_num = helpers.encode_anshou_num(form.cleaned_data['anshou_num'])
-            event.anshou_num = encoded_anshou_num
 
             # ===================================================
             # 保存処理 #1
@@ -78,26 +80,230 @@ def event_add(request):
             EventKouhoNichiji.objects.bulk_create(eventKouhoNichijis)
             event.save()
 
-            # ===================================================
-            # 次画面遷移
-            # ===================================================
-        return render(request,
-                      'home/schedule_fill.html',  # 使用するテンプレート
-                      dict(form=form, event_id=event.id))  # テンプレートに渡すデータ
+        # ===================================================
+        # 次画面遷移
+        # ===================================================
+        # ------------------------
+        # リダイレクト先のパスを取得する
+        # ------------------------
+        redirect_url = reverse('home:notify_event_add_completed')
 
+        # ------------------------
+        # パラメータのdictをurlencodeする
+        # ------------------------
+        parameters = urlencode({'key': schedule_update_id})
+
+        # ------------------------
+        # URLにパラメータを付与して遷移する
+        # ------------------------
+        url = f'{redirect_url}?{parameters}'
+        return redirect(url)
+
+    # ===================================================
+    # フォームバリデーションエラー時の次画面遷移
+    # ===================================================
     return render(request, 'home/top.html', dict(form=form))
     # return redirect('home:index')
+
+
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# イベント追加完了ページ遷移関数
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+def notify_event_add_completed(request):
+    """イベント追加完了"""
+    # ------------------------
+    # スケジュール編集URLを取得する
+    # ------------------------
+    parameters = urlencode({'key': request.GET.get('key')})
+    schedule_fill_url = reverse('home:event_kouho')
+    schedule_fill_url = "{}://{}{}?{}".format(request.scheme, request.get_host(), schedule_fill_url, parameters)
+
+    return render(request,
+                  'home/notify_event_add_completed.html',  # 使用するテンプレート
+                  {'schedule_fill_url': schedule_fill_url})  # テンプレートに渡すデータ
+
+
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# イベント日時候補表示関数
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+def event_kouho_print(request):
+    """各個人のスケジュール更新画面表示"""
+
+    # ===================================================
+    # パラメータ取得
+    # ===================================================
+    # ------------------------
+    # スケジュール更新ページID
+    # ------------------------
+    schedule_update_id = request.GET.get('key')
+    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
+
+    # ===================================================
+    # DBデータ取得
+    # ===================================================
+    # ------------------------
+    # イベントレコード
+    # ------------------------
+    event = Event.objects.get(pk=event_id)
+
+    # ------------------------
+    # イベント日時候補レコード
+    # ------------------------
+    result = EventKouhoNichiji.objects.filter(event=event)
+    event_kouho_nichiji_list = [entry for entry in result]
+
+    # ------------------------
+    # 当該イベント参加者ｘ参加日時(SankaNichiji)の組み合わせのレコード
+    # データ形式：下記形式の辞書（二重）
+    # {参加者ID: {"name": 参加者名, "comment": コメント, 参加日時1のイベント候補日時のID: 参加可否（○or△or✕）, 参加日時2のイベント候補日時のID: 参加可否, …}
+    # ※Sankashaレコードが取得できない場合（＝誰も参加可否を投入していない場合）、辞書は空となる。
+    # ------------------------
+    event_sankasha_sankakahi_dict_dict = {}
+    try:
+        for sankasha in Sankasha.objects.prefetch_related("sankasha_sanka_nichiji_set").get(event=event):
+            sankasha_dict = {}  # 内側の辞書
+            sankasha_dict['name'] = sankanichiji.sankasha.name
+            sankasha_dict['comment'] = sankanichiji.sankasha.comment
+            for sankanichiji in sankasha.sankasha_sanka_nichiji_set.all():
+                sankasha_dict[sankanichiji.event_kouho_nichiji.id] = sankanichiji.sanka_kahi
+            event_sankasha_sankakahi_dict_dict[sankasha.id] = sankasha_dict
+    except Sankasha.DoesNotExist:
+        pass
+
+    # ------------------------
+    # イベント日時候補データの1レコードごとの参加日時データ
+    # データ形式：下記形式の辞書＆配列
+    # {イベント日時候補テーブルID: [参加日時文字列, 参加者1の当時刻の回答レコード, 参加者2の当時刻の回答レコード,…]}
+    # ※SankaNichijiレコードが取得できない場合（＝誰も参加可否を投入していない場合）、下記内容となる。
+    #   {イベント日時候補テーブルID#1: [参加日時文字列], イベント日時候補テーブルID#2: [参加日時文字列], …}
+    # ------------------------
+    event_sanka_list_dict = {}
+    for event_kouho_nichiji in event_kouho_nichiji_list:
+        sanka_nichiji_list_of_a_datetime = SankaNichiji.objects.filter(event_kouho_nichiji=event_kouho_nichiji).select_related('event_kouho_nichiji')
+        if len(sanka_nichiji_list_of_a_datetime) == 0:
+            sanka_nichiji_list_of_a_datetime = [event_kouho_nichiji.kouho_nichiji]
+        else:
+            sanka_nichiji_list_of_a_datetime.insert(0, event_kouho_nichiji.kouho_nichiji)
+        event_sanka_list_dict[event_kouho_nichiji.id] = sanka_nichiji_list_of_a_datetime
+
+    # ===================================================
+    # 集計処理
+    # ===================================================
+    # ------------------------
+    # イベント日時候補ごとの○・△・✕の数データ
+    # データ形式：下記形式の辞書＆配列
+    # {イベント日時候補テーブルID: {nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu: ✕の数}}
+    # ※誰も参加可否を投入していない場合、下記内容となる。
+    #   {イベント日時候補テーブルID: {nichiji: 参加日時文字列, maru: 0, sankaku: 0, batsu: 0}}
+    # ------------------------
+    event_sanka_shuukei_dict_dict = {}
+    for event_kouho_nichiji_id, event_sanka_list in event_sanka_list_dict.items():  # イベント日時分のループ
+        shuukei_data = {'nichiji': event_sanka_list[0], 'maru': 0, 'sankaku': 0, 'batsu': 0}  # event_sanka_listの要素0には参加日時文字列が格納されている
+        for i in range(1, len(event_sanka_list)):  # 参加者数分のループ
+            event_sanka = event_sanka_list[i]
+            # sanka_kahiの取りうる値：1（○）、2（△）、3（✕）
+            if event_sanka.sanka_kahi == constants.SANKA_MARU:
+                shuukei_data['maru'] += 1
+            elif event_sanka.sanka_kahi == constants.SANKA_SANKAKU:
+                shuukei_data['sankaku'] += 1
+            elif event_sanka.sanka_kahi == constants.SANKA_BATSU:
+                shuukei_data['batsu'] += 1
+        event_sanka_shuukei_dict_dict[event_kouho_nichiji_id] = shuukei_data
+
+    # ===================================================
+    # 描画用データ作成処理
+    # ===================================================
+    # ------------------------
+    # (1)
+    # イベント日時候補ごとの'参加'・'欠席'・'微妙'の数データ＋参加者の参加可否詳細
+    # データ形式：下記形式の配列＆辞書
+    # [{nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu:✕の数, 参加者1の名前: 参加者1の参加可否, 参加者2の名前: 参加者2の参加可否, …]}
+    # ※(2)(3)と一緒に作る
+    # ------------------------
+    # ------------------------
+    # (2)
+    # イベント参加者名配列
+    # データ形式：下記形式の配列
+    # [参加者1名前, 参加者2名前, …]
+    # ※(1)(3)と一緒に作る
+    # ------------------------
+    # ------------------------
+    # (3)
+    # イベント参加者コメント配列
+    # データ形式：下記形式の配列
+    # [参加者1コメント, 参加者2コメント, …]
+    # ※(1)(2)と一緒に作る
+    # ------------------------
+
+    # 作成するデータの入れ物
+    # ※誰も参加可否を投入していない場合(2)(3)は空配列となる。
+    # (1)
+    event_sanka_table_dict_list = []
+    # (2)
+    event_sankasha_names = []
+    # (3)
+    event_sankasha_comments = []
+
+    # 下記形式の変数event_sankasha_sankakahi_dict_dictをもとに処理する
+    # {参加者ID: {"name": 参加者名, "comment": コメント, 参加日時1のイベント候補日時のID: 参加可否（○or△or✕）, 参加日時2のイベント候補日時のID: 参加可否, …}
+    for vent_sankasha_sankakahi_dict in event_sankasha_sankakahi_dict_dict.values():  # イベント参加者分のループ
+        name = event_sankasha_sankakahi['name']
+        event_sankasha_names.append(name)
+        event_sankasha_comments.append(event_sankasha_sankakahi['comment'])
+        for key, event_sankasha_sankakahi in vent_sankasha_sankakahi_dict.items():  # 辞書要素数分のループ
+            if not key in ['name', 'comment']:
+                # {nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu: ✕の数} のデータ取得
+                event_sanka_shuukei_dict = event_sanka_shuukei_dict_dict[key]
+                # 上記に、参加者Xの名前: 参加者Xの参加可否を追加
+                event_sanka_shuukei_dict[name] = event_sankasha_sankakahi.sanka_kahi
+
+    # ここまでの処理で、event_sanka_shuukei_dict_dictの形式は下記：
+    # {イベント日時候補テーブルID: {nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu: ✕の数, 参加者1の名前: 参加者1の参加可否, 参加者2の名前: 参加者2の参加可否, …}}
+    event_sanka_table_dict_list.extend(event_sanka_shuukei_dict_dict.values())
+
+    # ===================================================
+    # 次画面遷移
+    # ===================================================
+    return render(
+        request,
+        'home/event_kouho.html',  # 使用するテンプレート
+        {  # テンプレートに渡すデータ
+            'event_name': event.name,
+            'event_memo': event.memo,
+            'event_sanka_table_dict_list': event_sanka_table_dict_list,
+            'event_sankasha_names': event_sankasha_names,
+            'event_sankasha_comments': event_sankasha_comments
+        }
+    )
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 # スケジュール更新関数
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 def schedule_fill(request):
-    """イベントの一覧"""
-    events = Event.objects.all().order_by('id')
+    """各個人のスケジュール更新"""
+
+    # ===================================================
+    # パラメータ取得
+    # ===================================================
+    # ------------------------
+    # スケジュール更新ページID
+    # ------------------------
+    schedule_update_id = request.GET.get('key')
+    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
+
+    # ===================================================
+    # DBデータ取得
+    # ===================================================
+    event_kouho_nichiji_list = []
+    event = Event.objects.prefetch_related("event_kouho_nichiji_set").get(pk=event_id)
+    event_kouho_nichiji_list.append(event.event_kouho_nichiji_set.all())
+
+    # ===================================================
+    # ===================================================
     return render(request,
-                  'home/event_list.html',  # 使用するテンプレート
-                  {'events': events})  # テンプレートに渡すデータ
+                  'home/event_kouho.html',  # 使用するテンプレート
+                  {'event_kouho_nichiji_list': event_kouho_nichiji_list})  # テンプレートに渡すデータ
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡

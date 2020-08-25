@@ -1,0 +1,43 @@
+{% extends "home/base.html" %}
+{% load lookup %}
+
+{% block title %}参加可否記入 - 都合くん「この日空いてますか。」{% endblock title %}
+
+{% block content %}
+<h2>{{ event_name }}</h2>
+<hr>
+<h4>{{ event_memo }}</h4>
+<hr>
+<h4>イベント日時候補</h4>
+<table>
+    <tr>
+        <th>日程</th>
+        <th>○</th>
+        <th>△</th>
+        <th>✕</th>
+        {% for event_sankasha_name in event_sankasha_names %}
+        <th>{{ event_sankasha_name }}</th>
+        {% endfor %}
+    </tr>
+    {% for event_sanka_table_dict in event_sanka_table_dict_list %}
+    <tr>
+        <th>{{ event_sanka_table_dict.nichiji }}</th>
+        <td>{{ event_sanka_table_dict.maru }}</td>
+        <td>{{ event_sanka_table_dict.sankaku }}</td>
+        <td>{{ event_sanka_table_dict.batsu }}</td>
+        {% for event_sankasha_name in event_sankasha_names %}
+        <td>{{ event_sanka_table_dict|lookup:event_sankasha_name }}</td>
+        {% endfor %}
+    </tr>
+    {% endfor %}
+    <tr>
+        <th>コメント</th>
+        <td colspan="3"></td>
+        {% for event_sankasha_comment in event_sankasha_comments %}
+        <td>{{ event_sankasha_comment }}</td>
+        {% endfor %}
+    </tr>
+</table>
+
+</form>
+{% endblock content %}

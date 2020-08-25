@@ -1,0 +1,80 @@
+>>> for blog in Blog.objects.filter(title__contains='記事'):
+...     BlogTag.objects.filter(blog=blog)
+...
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."title" LIKE '%記事%' ESCAPE '\'; args=('%記事%',) ★from blog
+★"myapp_blog"."id"を取得。forループ内のクエリで使う。
+
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id" FROM "myapp_blogtag" WHERE "myapp_blogtag"."blog_id" = 1 LIMIT 21; args=(1,) ★from blogtag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 1; args=(1,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 1; args=(1,) ★from tag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 1; args=(1,)  ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Pythonの記事:<Python>>, <BlogTag: Pythonの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id" FROM "myapp_blogtag" WHERE "myapp_blogtag"."blog_id" = 2 LIMIT 21; args=(2,) ★from blogtag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 2; args=(2,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 2; args=(2,) ★from tag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 2; args=(2,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Rubyの記事:<Ruby>>, <BlogTag: Rubyの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id" FROM "myapp_blogtag" WHERE "myapp_blogtag"."blog_id" = 3 LIMIT 21; args=(3,) ★from blogtag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 3; args=(3,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 1; args=(1,) ★from tag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 3; args=(3,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 3; args=(3,) ★from tag
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."id" = 3; args=(3,) ★from blog
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Djangoの記事:<Python>>, <BlogTag: Djangoの記事:<Django>>, <BlogTag: Djangoの記事:<ソフトウェア>>]>
+
+
+
+>>> for blog in Blog.objects.filter(title__contains='記事').prefetch_related('blogtag_set'):
+...     blog.blogtag_set.all()
+...
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."title" LIKE '%記事%' ESCAPE '\'; args=('%記事%',) ★from blog
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id" FROM "myapp_blogtag" WHERE "myapp_blogtag"."blog_id" IN (1, 2, 3); args=(1, 2, 3) ★from blogtag
+
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 1; args=(1,) ★from tag
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Pythonの記事:<Python>>, <BlogTag: Pythonの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 2; args=(2,) ★from tag
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Rubyの記事:<Ruby>>, <BlogTag: Rubyの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 1; args=(1,) ★from tag
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 3; args=(3,) ★from tag
+(0.000) SELECT "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_tag" WHERE "myapp_tag"."id" = 4; args=(4,) ★from tag
+<QuerySet [<BlogTag: Djangoの記事:<Python>>, <BlogTag: Djangoの記事:<Django>>, <BlogTag: Djangoの記事:<ソフトウェア>>]>
+
+
+
+
+>>> for blog in Blog.objects.filter(title__contains='記事').prefetch_related('blogtag_set'):
+...     blog.blogtag_set.all().select_related('tag')
+...
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."title" LIKE '%記事%' ESCAPE '\'; args=('%記事%',) ★from blog
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id" FROM "myapp_blogtag" WHERE "myapp_blogtag"."blog_id" IN (1, 2, 3); args=(1, 2, 3) ★from blogtag
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id", "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_blogtag" INNER JOIN "myapp_tag" ON ("myapp_blogtag"."tag_id" = "myapp_tag"."id") WHERE "myapp_blogtag"."blog_id" = 1 LIMIT 21; args=(1,)  ★from  blogtag, tag
+<QuerySet [<BlogTag: Pythonの記事:<Python>>, <BlogTag: Pythonの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id", "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_blogtag" INNER JOIN "myapp_tag" ON ("myapp_blogtag"."tag_id" = "myapp_tag"."id") WHERE "myapp_blogtag"."blog_id" = 2 LIMIT 21; args=(2,)  ★from  blogtag, tag
+<QuerySet [<BlogTag: Rubyの記事:<Ruby>>, <BlogTag: Rubyの記事:<ソフトウェア>>]>
+
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id", "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_blogtag" INNER JOIN "myapp_tag" ON ("myapp_blogtag"."tag_id" = "myapp_tag"."id") WHERE "myapp_blogtag"."blog_id" = 3 LIMIT 21; args=(3,)  ★from  blogtag, tag
+<QuerySet [<BlogTag: Djangoの記事:<Python>>, <BlogTag: Djangoの記事:<Django>>, <BlogTag: Djangoの記事:<ソフトウェア>>]>
+
+
+
+>>> from django.db.models import Prefetch
+>>> for blog in Blog.objects.filter(title__contains='記事').prefetch_related(Prefetch('blogtag_set', queryset=BlogTag.objects.select_related('tag'))):
+...     blog.blogtag_set.all()
+...
+(0.000) SELECT "myapp_blog"."id", "myapp_blog"."title", "myapp_blog"."content" FROM "myapp_blog" WHERE "myapp_blog"."title" LIKE '%記事%' ESCAPE '\'; args=('%記事%',) ★from blog
+(0.000) SELECT "myapp_blogtag"."id", "myapp_blogtag"."blog_id", "myapp_blogtag"."tag_id", "myapp_tag"."id", "myapp_tag"."name" FROM "myapp_blogtag" INNER JOIN "myapp_tag" ON ("myapp_blogtag"."tag_id" = "myapp_tag"."id") WHERE "myapp_blogtag"."blog_id" IN (1, 2, 3); args=(1, 2, 3)
+<QuerySet [<BlogTag: Pythonの記事:<Python>>, <BlogTag: Pythonの記事:<ソフトウェア>>]>
+<QuerySet [<BlogTag: Rubyの記事:<Ruby>>, <BlogTag: Rubyの記事:<ソフトウェア>>]>
+<QuerySet [<BlogTag: Djangoの記事:<Python>>, <BlogTag: Djangoの記事:<Django>>, <BlogTag: Djangoの記事:<ソフトウェア>>]>

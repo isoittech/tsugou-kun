@@ -1,0 +1,30 @@
+{% extends "home/base.html" %}
+
+{% block title %}イベント追加完了 - 都合くん「この日空いてますか。」{% endblock title %}
+
+{% block content %}
+<div class="form-group">
+    <label for="schedule_fill_url">イベントページURL</label>
+    <input type="text" class="form-control" id="schedule_fill_url" value="{{ schedule_fill_url }}" readonly>
+    <button type="submit" class="btn btn-primary" onclick="clip_board_copy();return false;">URLをクリップボードにコピー</button>
+    <a href="{{ schedule_fill_url }}" class="btn btn-primary">イベントページへ移動する</a>
+
+
+</div>
+<script>
+	function clip_board_copy(){
+	    var schedule_fill_url = document.getElementById('schedule_fill_url');
+        // 文字をすべて選択
+        schedule_fill_url.select();
+        // コピー
+        document.execCommand("copy");
+
+        alert('コピーできるようにしました。\nメール・チャット等で貼り付けてお知らせに貼り付けてご利用ください。');
+	}
+
+
+
+
+
+</script>
+{% endblock content %}
