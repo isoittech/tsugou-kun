@@ -1,6 +1,6 @@
 from django import forms
 
-from home.models import Event
+from home.models import Event, Sankasha
 
 
 class EventForm(forms.ModelForm):
@@ -23,3 +23,25 @@ class EventForm(forms.ModelForm):
         max_length=255,
         error_messages={'required': 'イベント日時候補は必須です!', }
     )
+
+
+class EventSankakahiForm(forms.ModelForm):
+    """
+    イベント参加可否のフォーム
+    """
+
+    class Meta:
+        model = Sankasha
+        fields = ('name', 'comment',)
+        error_messages = {
+            'name': {
+                'required': '名前は必須です!'
+            }
+        }
+
+    def add_sankakahi_form(self, name):
+        self.fields[name] = forms.ChoiceField(
+            required=False,
+            initial=0
+        )
+

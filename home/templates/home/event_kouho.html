@@ -1,5 +1,5 @@
 {% extends "home/base.html" %}
-{% load lookup static %}
+{% load filter static %}
 
 {% block title %}参加可否記入 - 都合くん「この日空いてますか。」{% endblock title %}
 
@@ -17,9 +17,6 @@ $(function () {
     });
 });
 
-
-
-
 </script>
 <div class=" row d-flex justify-content-center my-5">
     <div class="col-sm-10">
@@ -28,39 +25,43 @@ $(function () {
                 <h4 class="card-title">{{ event_name }}</h4>
                 <p class="card-text">{{ event_memo }}</p>
                 <h6 class="card-title">イベント日時候補</h6>
-                <table class="table table-striped table-hover mb-5">
-                    <thead class="thead-light">
-                    <tr>
-                        <th>日程</th>
-                        <th>○</th>
-                        <th>△</th>
-                        <th>✕</th>
-                        {% for event_sankasha_name in event_sankasha_names %}
-                        <th>{{ event_sankasha_name }}</th>
+                <div class="table-responsive">
+                    <table id="nichizi_kouho_table" class="table table-hover table-bordered mb-5">
+                        <thead class="thead-light">
+                        <tr>
+                            <th>日程</th>
+                            <th>○</th>
+                            <th>△</th>
+                            <th>✕</th>
+                            {% for event_sankasha_name in event_sankasha_names %}
+                            <th>{{ event_sankasha_name }}</th>
+                            {% endfor %}
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for event_sanka_table_dict in event_sanka_table_dict_list %}
+                        <tr>
+                            <th>{{ event_sanka_table_dict.nichiji }}</th>
+                            <td>{{ event_sanka_table_dict.maru }}</td>
+                            <td>{{ event_sanka_table_dict.sankaku }}</td>
+                            <td>{{ event_sanka_table_dict.batsu }}</td>
+                            {% for event_sankasha_name in event_sankasha_names %}
+                            <td>
+                                {{ event_sanka_table_dict|lookup:event_sankasha_name|to_symbol }}
+                            </td>
+                            {% endfor %}
+                        </tr>
                         {% endfor %}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for event_sanka_table_dict in event_sanka_table_dict_list %}
-                    <tr>
-                        <th>{{ event_sanka_table_dict.nichiji }}</th>
-                        <td>{{ event_sanka_table_dict.maru }}</td>
-                        <td>{{ event_sanka_table_dict.sankaku }}</td>
-                        <td>{{ event_sanka_table_dict.batsu }}</td>
-                        {% for event_sankasha_name in event_sankasha_names %}
-                        <td>{{ event_sanka_table_dict|lookup:event_sankasha_name }}</td>
-                        {% endfor %}
-                    </tr>
-                    {% endfor %}
-                    <tr>
-                        <th>コメント</th>
-                        <td colspan="3"></td>
-                        {% for event_sankasha_comment in event_sankasha_comments %}
-                        <td>{{ event_sankasha_comment }}</td>
-                        {% endfor %}
-                    </tr>
-                    </tbody>
-                </table>
+                        <tr>
+                            <th>コメント</th>
+                            <td colspan="3"></td>
+                            {% for event_sankasha_comment in event_sankasha_comments %}
+                            <td style="text-align: center; max-width:100px;">{{ event_sankasha_comment }}</td>
+                            {% endfor %}
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
 
                 <p>
                     <a class="btn btn-primary btn-lg btn-block" data-toggle="collapse" href="#sanka_kahi_area"
@@ -72,18 +73,60 @@ $(function () {
 
                 <div class="collapse mt-5" id="sanka_kahi_area">
                     <div class="card card-body">
-                        <form>
+                        <form action="{% url 'home:schedule_fill' %}" method="post">
+                            <div class="form-row">
+                                {% csrf_token %}
+                                {{ form.non_field_errors }}
+                                <input type="hidden" name="key" value="{{ schedule_update_id }}">
+                            </div>
                             <div class="form-group">
-                                <label for="sankasha_name">名前</label>
-                                <input type="text" class="form-control" id="sankasha_name" name="sankasha_name"
+                                <label for="name">名前</label>
+                                <input type="text" class="form-control" id="name" name="name"
                                        aria-describedby="sankashaNameHelp" placeholder="名前・ニックネーム">
                                 <small id="sankashaNameHelp" class="form-text text-muted">絵文字は入れられません。</small>
                             </div>
                             <div class="form-group">
-                                <label for="sankasha_name">コメント</label>
-                                <input type="text" class="form-control" id="sanka_kahi_comment"
-                                       name="sanka_kahi_comment"
-                                       aria-describedby="sankashaCommentHelp" placeholder="コメント・言い訳・感謝、何でもどうぞ。">
+                                <label>イベント日時候補</label>
+                                <table id="kaitou_table" class="table table-striped table-hover table-bordered">
+                                    <thead class="thead-light">
+                                    <tr>
+                                        <th>日程</th>
+                                        <th>○（出席）</th>
+                                        <th>△（微妙）</th>
+                                        <th>✕（欠席）</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {% for event_sanka_table_dict in event_sanka_table_dict_list %}
+                                    <tr>
+                                        <th>{{ event_sanka_table_dict.nichiji }}</th>
+                                        <td>
+                                            <input class="form-check-input centered-radio" type="radio"
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   value="1">
+                                        </td>
+                                        <td>
+                                            <input class="form-check-input centered-radio" type="radio"
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   value="2">
+                                        </td>
+                                        <td>
+                                            <input class="form-check-input centered-radio" type="radio"
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
+                                                   value="3">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="form-group">
+                                <label for="comment">コメント</label>
+                                <input type="text" class="form-control" id="comment"
+                                       name="comment" placeholder="コメント・言い訳・感謝、何でもどうぞ。">
                             </div>
                             <button type="submit" class="btn btn-primary">出欠を回答する</button>
                         </form>

@@ -19,3 +19,12 @@
 .rightBottomFixed:hover{
     opacity:1;
 }
+
+table#nichizi_kouho_table > thead > tr > th
+, table#nichizi_kouho_table > tbody > tr > td
+, table#kaitou_table > thead > tr > th
+, table#kaitou_table > tbody > tr > td {
+    text-align: center;
+    vertical-align: middle;
+}
+
