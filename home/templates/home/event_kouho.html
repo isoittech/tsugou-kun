@@ -7,13 +7,41 @@
 <script>
 $(function () {
     $('#sanka_kahi_area').on('shown.bs.collapse', function () {
-        var element = document.documentElement;
-        var bottom = element.scrollHeight - element.clientHeight;
-        window.scroll(0, bottom);
+        $("html,body").animate({scrollTop:$('#sanka_kahi_area').offset().top});
     })
 
-    $(".rightBottomFixed").click(function(){
+    $('.rightBottomFixed').click(function(){
         $('html,body').animate({'scrollTop':0},500);
+    });
+
+    $('a.event_sankashamei_link').click(function(){
+        var eventSankashaInfo = $(this).next().val();
+        var eventSankashaInfos = eventSankashaInfo.split(',');
+        // '参加者1ID,参加者1名前,参加者1のコメント,参加日時1のイベント候補日時のID,参加者1の参加日時1の参加可否,参加日時2のイベント候補日時のID,参加者1の参加日時2の参加可否,…'
+
+        var sankashaId = eventSankashaInfos[0]; // 参加者ID
+        var sankashaName = eventSankashaInfos[1]; // 参加者名
+        var comment = eventSankashaInfos[2]; // コメント
+
+        $('#sankasha_name').val(sankashaName);
+        $('#sankasha_id').val(sankashaId);
+        $('#comment').val(comment);
+
+        // 参加可否radioフォームをクリックさせるループ
+        for(let i = 3; i < eventSankashaInfos.length; i = i + 2) {
+            var kouhoNichiziId = eventSankashaInfos[i];
+            var sankaKahi = eventSankashaInfos[i+1];
+            $('input[name=event_nichizi_kouho_id_' + kouhoNichiziId +']').val([sankaKahi]);
+        }
+
+        // 参加可否回答フォームを開く
+        // 開いている状態（class属性にshowがある状態）は遷移する。
+        // 開いていない状態（class属性にshowがない状態）はcollapseする。
+        if($('#sanka_kahi_area').is('[class*="show"]')){
+            $("html,body").animate({scrollTop:$('#sanka_kahi_area').offset().top});
+        } else {
+            $('#sanka_kahi_area').collapse('show');
+        }
     });
 });
 
@@ -33,8 +61,13 @@ $(function () {
                             <th>○</th>
                             <th>△</th>
                             <th>✕</th>
-                            {% for event_sankasha_name in event_sankasha_names %}
-                            <th>{{ event_sankasha_name }}</th>
+                            {% for event_sankasha_name, event_sankasha_info in event_sankasha_dict.items %}
+                            <th>
+                                <div>
+                                    <a class="event_sankashamei_link">{{ event_sankasha_name }}</a>
+                                    <input type="hidden" value="{{ event_sankasha_info }}">
+                                </div>
+                            </th>
                             {% endfor %}
                         </tr>
                         </thead>
@@ -45,9 +78,11 @@ $(function () {
                             <td>{{ event_sanka_table_dict.maru }}</td>
                             <td>{{ event_sanka_table_dict.sankaku }}</td>
                             <td>{{ event_sanka_table_dict.batsu }}</td>
-                            {% for event_sankasha_name in event_sankasha_names %}
+                            {% for event_sankasha_name in event_sankasha_dict.keys %}
                             <td>
-                                {{ event_sanka_table_dict|lookup:event_sankasha_name|to_symbol }}
+                                <div>
+                                    {{ event_sanka_table_dict|lookup:event_sankasha_name|to_symbol }}
+                                </div>
                             </td>
                             {% endfor %}
                         </tr>
@@ -78,10 +113,11 @@ $(function () {
                                 {% csrf_token %}
                                 {{ form.non_field_errors }}
                                 <input type="hidden" name="key" value="{{ schedule_update_id }}">
+                                <input type="hidden" id="sankasha_id" name="sankasha_id" value="">
                             </div>
                             <div class="form-group">
-                                <label for="name">名前</label>
-                                <input type="text" class="form-control" id="name" name="name"
+                                <label for="sankasha_name">名前</label>
+                                <input type="text" class="form-control" id="sankasha_name" name="name"
                                        aria-describedby="sankashaNameHelp" placeholder="名前・ニックネーム">
                                 <small id="sankashaNameHelp" class="form-text text-muted">絵文字は入れられません。</small>
                             </div>

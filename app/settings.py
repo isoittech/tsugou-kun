@@ -79,18 +79,18 @@ DATABASES = {
     'default': {
         # 'ENGINE': 'django.db.backends.sqlite3', # DEFAULT
         # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # DEFAULT
-        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # 'NAME': 'tsugoukun',
-        # 'USER': 'postgres',
-        # 'PASSWORD': 'postgres',
-        # 'HOST': 'localhost',
-        # 'PORT': '5432',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'd5gmg6ujvs0sli',
-        'USER': 'vurymddshqrfoe',
-        'PASSWORD': '72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682',
-        'HOST': 'postgres://vurymddshqrfoe:72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682@ec2-34-236-215-156.compute-1.amazonaws.com:5432/d5gmg6ujvs0sli',
+        'NAME': 'tsugoukun',
+        'USER': 'postgres',
+        'PASSWORD': 'postgres',
+        'HOST': 'localhost',
         'PORT': '5432',
+        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        # 'NAME': 'd5gmg6ujvs0sli',
+        # 'USER': 'vurymddshqrfoe',
+        # 'PASSWORD': '72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682',
+        # 'HOST': 'postgres://vurymddshqrfoe:72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682@ec2-34-236-215-156.compute-1.amazonaws.com:5432/d5gmg6ujvs0sli',
+        # 'PORT': '5432',
 
     }
 }

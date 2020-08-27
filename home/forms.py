@@ -39,6 +39,8 @@ class EventSankakahiForm(forms.ModelForm):
             }
         }
 
+    sankasha_id = forms.HiddenInput()
+
     def add_sankakahi_form(self, name):
         self.fields[name] = forms.ChoiceField(
             required=False,

@@ -228,8 +228,11 @@ def event_kouho_print(request):
     # ------------------------
     # (2)
     # イベント参加者名配列
-    # データ形式：下記形式の配列
-    # [参加者1名前, 参加者2名前, …]
+    # データ形式：下記形式の辞書
+    # [参加者1名前: '参加者1ID,参加者1名前,参加者1のコメント,参加日時1のイベント候補日時のID,参加者1の参加日時1の参加可否,参加日時2のイベント候補日時のID,参加者1の参加日時2の参加可否,…'
+    #  ,参加者2名前: '参加者2ID,参加者2名前,参加者2のコメント,参加日時1のイベント候補日時のID,参加者2の参加日時1の参加可否,参加日時2のイベント候補日時のID,参加者2の参加日時2の参加可否,…'
+    #  ,…]
+    # ※参加可否の編集元データとして使用される。イベント参加者名をクリックすると、このデータがjQueryにより、編集フォームに反映される。
     # ※(1)(3)と一緒に作る
     # ------------------------
     # ------------------------
@@ -245,15 +248,15 @@ def event_kouho_print(request):
     # (1)
     event_sanka_table_dict_list = []
     # (2)
-    event_sankasha_names = []
+    event_sankasha_dict = {}
     # (3)
     event_sankasha_comments = []
 
     # 下記形式の変数event_sankasha_sankakahi_dict_dictをもとに処理する
     # {参加者ID: {"name": 参加者名, "comment": コメント, 参加日時1のイベント候補日時のID: 参加可否（○or△or✕）, 参加日時2のイベント候補日時のID: 参加可否, …}
-    for event_sankasha_sankakahi_dict in event_sankasha_sankakahi_dict_dict.values():  # イベント参加者分のループ
+    for sankasha_id, event_sankasha_sankakahi_dict in event_sankasha_sankakahi_dict_dict.items():  # イベント参加者分のループ
         name = event_sankasha_sankakahi_dict['name']
-        event_sankasha_names.append(name)
+        event_sankasha_dict[name] = str(sankasha_id) + ',' + name + ',' + event_sankasha_sankakahi_dict['comment']
         event_sankasha_comments.append(event_sankasha_sankakahi_dict['comment'])
         for key, event_sankasha_sankakahi in event_sankasha_sankakahi_dict.items():  # 辞書要素数分のループ
             if not key in ['name', 'comment']:
@@ -261,6 +264,8 @@ def event_kouho_print(request):
                 event_sanka_shuukei_dict = event_sanka_shuukei_dict_dict[key]
                 # 上記に、参加者Xの名前: 参加者Xの参加可否を追加
                 event_sanka_shuukei_dict[name] = event_sankasha_sankakahi
+                # (2)のデータ作成
+                event_sankasha_dict[name] = event_sankasha_dict[name] + ',' + str(key) + ',' + str(event_sankasha_sankakahi)
 
     # ここまでの処理で、event_sanka_shuukei_dict_dictの形式は下記：
     # {イベント日時候補テーブルID: {event_nichizi_kouho_id: イベント日時候補テーブルID, nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu: ✕の数, 参加者1の名前: 参加者1の参加可否, 参加者2の名前: 参加者2の参加可否, …}}
@@ -277,7 +282,7 @@ def event_kouho_print(request):
             'event_name': event.name,
             'event_memo': event.memo,
             'event_sanka_table_dict_list': event_sanka_table_dict_list,
-            'event_sankasha_names': event_sankasha_names,
+            'event_sankasha_dict': event_sankasha_dict,
             'event_sankasha_comments': event_sankasha_comments,
             'schedule_update_id': schedule_update_id,  # スケジュール更新ページID
         }
@@ -298,6 +303,7 @@ def schedule_fill(request):
     # ------------------------
     schedule_update_id = request.POST.get('key')
     event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
+    sankasha_id = request.POST.get('sankasha_id')
 
     form = EventSankakahiForm(request.POST)  # POST された request データからフォームを作成
     if form.is_valid():  # フォームのバリデーション
@@ -311,12 +317,15 @@ def schedule_fill(request):
             # 保存対象モデルデータ作成
             # ===================================================
             sankasha = form.save(commit=False)
+            if sankasha_id != '': sankasha.id = sankasha_id
             sankasha.event = event
 
             # ===================================================
             # 保存処理 #1
             # ===================================================
             sankasha.save()
+            # 更新時における古いデータを消す。更新対象データを特定する処理が面倒なので、
+            SankaNichiji.objects.filter(sankasha=sankasha).delete()
 
             # ===================================================
             # ここから保存処理#2用処理
