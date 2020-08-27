@@ -358,26 +358,23 @@ def schedule_fill(request):
         # ===================================================
         # 次画面遷移
         # ===================================================
-        # ------------------------
         # リダイレクト先のパスを取得する
-        # ------------------------
         redirect_url = reverse('home:event_kouho')
 
-        # ------------------------
         # パラメータのdictをurlencodeする
-        # ------------------------
         parameters = urlencode({'key': schedule_update_id})
 
-        # ------------------------
         # URLにパラメータを付与して遷移する
-        # ------------------------
         url = f'{redirect_url}?{parameters}'
         return redirect(url)
 
     # ===================================================
     # フォームバリデーションエラー時の次画面遷移
     # ===================================================
-    return render(request, 'home/event_kouho.html', dict(form=form))
+    # パラメータのdictをurlencodeする
+    params = dict(form=form)
+    params['schedule_update_id'] = schedule_update_id
+    return render(request, 'home/event_kouho.html', params)
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
