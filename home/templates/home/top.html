@@ -1,82 +1,50 @@
 {% extends "home/base.html" %}
 
-{% block title %}イベント追加 - 都合くん「この日空いてますか。」{% endblock title %}
+{% block title %}イベント新規登録 - 都合くん「この日空いてるっすか。」{% endblock title %}
 
 {% block content %}
-<form action="{% url 'home:event_add' %}" method="post">
-    <div class="form-row">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-    </div>
-    <div class="form-row">
-        <div class="form-group col-md-6">
-            <div class="form-group">
-                <label for="{{ form.name.id_for_label }}">イベント名</label>
-                <input type="text" class="form-control" id="name" name="name" placeholder="イベント名">
-                {{ form.name.errors }}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.event_datetime_kouho.id_for_label }}">イベント日時候補</label>
-                <textarea class="form-control" id="event_datetime_kouho" name="event_datetime_kouho"
-                          rows="5"></textarea>
-                {{ form.event_datetime_kouho.errors }}
-            </div>
-            <div class="form-group">
-                <label for="{{ form.memo.id_for_label }}">イベントメモ</label>
-                <textarea class="form-control" id="memo" name="memo" rows="5"></textarea>
-                {{ form.memo.errors }}
-            </div>
+<div class=" row d-flex justify-content-center my-5">
+    <div class="col-sm-10">
+        <div class="card rounded">
+            <div class="card-body">
 
+                <form action="{% url 'home:event_add' %}" method="post">
+                    <div class="form-row">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group col-sm-6">
+                            <div class="form-group">
+                                <label for="name" class="hissu">イベント名</label>
+                                <input type="text" class="form-control" id="name" name="name" placeholder="イベント名">
+                                {{ form.name.errors }}
+                            </div>
+                            <div class="form-group">
+                                <label for="memo">イベントメモ</label>
+                                <textarea class="form-control" id="memo" name="memo" rows="5"></textarea>
+                                {{ form.memo.errors }}
+                            </div>
+                            <div class="form-group">
+                                <label for="event_datetime_kouho" class="hissu">イベント日時候補</label>
+                                <textarea class="form-control" id="event_datetime_kouho" name="event_datetime_kouho"
+                                          rows="5"></textarea>
+                                {{ form.event_datetime_kouho.errors }}
+                            </div>
+                        </div>
+                        <div class="form-group col-sm-4">
+                            <div class="form-group">
+                                <label for="eventDateTimeCalendar">カレンダー</label>
+                                <div id="eventDateTimeCalendar"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">出欠表を作る</button>
+
+                </form>
+            </div>
         </div>
-        <div class="form-group col-md-6">
-            <div class="form-group">
-                <label for="eventDateTimeCalendar">カレンダー</label>
-                <div id="eventDateTimeCalendar"></div>
-            </div>
-        </div>
     </div>
-
-    <button type="submit" class="btn btn-primary">出欠表を作る</button>
-
-</form>
-<script>
-	$(function () {
-            var numberOfMonths;
-            if (window.matchMedia && window.matchMedia('(max-device-width: 640px)').matches) {
-                // smartphone
-                numberOfMonths = 1;
-            } else {
-                // pc
-                numberOfMonths = 2;
-            }
-
-			$("#eventDateTimeCalendar").datepicker({
-			    dateFormat: "m/d(DD)",
-				firstDay: 0,
-				yearSuffix: '年',
-				showMonthAfterYear: true,
-				monthNames: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
-				dayNames: ['日', '月', '火', '水', '木', '金', '土'],
-				dayNamesMin: ['日', '月', '火', '水', '木', '金', '土'],
-				minDate: new Date(),
-				maxDate: '+12m',
-				hideIfNoPrevNext: true,
-                todayHighlight: true,
-                multidate: true,
-                numberOfMonths: numberOfMonths,
-
-                onSelect: function (dateText, inst) {
-					var nowText = $("#event_datetime_kouho").val();
-
-					if (nowText === "") {
-						$("#event_datetime_kouho").val(dateText + " 19:00〜");
-					}
-					else {
-						$("#event_datetime_kouho").val(nowText + "\n" + dateText + " 19:00〜");
-					}
-				}
-			});
-	});
-
-</script>
+</div>
 {% endblock content %}

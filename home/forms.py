@@ -25,6 +25,17 @@ class EventForm(forms.ModelForm):
     )
 
 
+class EventEditForm(EventForm):
+    """
+    イベント編集のフォーム
+    """
+    event_datetime_kouho = forms.CharField(
+        label='イベント日時候補',
+        required=False,
+        max_length=255,
+    )
+
+
 class EventSankakahiForm(forms.ModelForm):
     """
     イベント参加可否のフォーム

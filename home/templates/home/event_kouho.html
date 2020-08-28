@@ -1,7 +1,7 @@
 {% extends "home/base.html" %}
 {% load filter static %}
 
-{% block title %}参加可否記入 - 都合くん「この日空いてますか。」{% endblock title %}
+{% block title %}参加可否記入 - 都合くん「この日空いてるっすか。」{% endblock title %}
 
 {% block content %}
 <script>
@@ -45,11 +45,17 @@ $(function () {
     });
 });
 
+
 </script>
 <div class=" row d-flex justify-content-center my-5">
     <div class="col-sm-10">
         <div class="card rounded">
             <div class="card-body">
+                <div class="float-right">
+                    <a href="{% url 'home:event_edit_prepare' %}?key={{ schedule_update_id }}" class="btn btn-outline-primary">
+                        イベント内容を編集する
+                    </a>
+                </div>
                 <h4 class="card-title">{{ event_name }}</h4>
                 <p class="card-text">{{ event_memo }}</p>
                 <h6 class="card-title">イベント日時候補</h6>
@@ -116,7 +122,7 @@ $(function () {
                                 <input type="hidden" id="sankasha_id" name="sankasha_id" value="">
                             </div>
                             <div class="form-group">
-                                <label for="sankasha_name">名前</label>
+                                <label for="sankasha_name" class="hissu">名前</label>
                                 <input type="text" class="form-control" id="sankasha_name" name="name"
                                        aria-describedby="sankashaNameHelp" placeholder="名前・ニックネーム">
                                 <small id="sankashaNameHelp" class="form-text text-muted">絵文字は入れられません。</small>
@@ -164,7 +170,9 @@ $(function () {
                                 <input type="text" class="form-control" id="comment"
                                        name="comment" placeholder="コメント・言い訳・感謝、何でもどうぞ。">
                             </div>
-                            <button type="submit" class="btn btn-primary">出欠を回答する</button>
+                            <div class="form-group d-flex justify-content-end">
+                                <button type="submit" class="btn btn-primary px-5">出欠を回答する</button>
+                            </div>
                         </form>
                     </div>
                 </div>

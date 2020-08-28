@@ -1,15 +1,27 @@
 {% extends "home/base.html" %}
 
-{% block title %}イベント追加完了 - 都合くん「この日空いてますか。」{% endblock title %}
+{% block title %}イベント追加完了 - 都合くん「この日空いてるっすか。」{% endblock title %}
 
 {% block content %}
-<div class="form-group">
-    <label for="schedule_fill_url">イベントページURL</label>
-    <input type="text" class="form-control" id="schedule_fill_url" value="{{ schedule_fill_url }}" readonly>
-    <button type="submit" class="btn btn-primary" onclick="clip_board_copy();return false;">URLをクリップボードにコピー</button>
-    <a href="{{ schedule_fill_url }}" class="btn btn-primary">イベントページへ移動する</a>
+<div class=" row d-flex justify-content-center my-5">
+    <div class="col-sm-10">
+        <div class="card rounded">
+            <div class="card-body">
 
-
+                <div class="form-group">
+                    <label for="schedule_fill_url">イベントページURL</label>
+                    <input type="text" class="form-control" id="schedule_fill_url" value="{{ schedule_fill_url }}"
+                           readonly>
+                </div>
+                <div class="form-group d-flex justify-content-end">
+                    <button type="submit" class="btn btn-outline-primary" onclick="clip_board_copy();return false;">
+                        URLをクリップボードにコピー
+                    </button>
+                    <a href="{{ schedule_fill_url }}" class="btn btn-primary ml-3">イベントページへ移動する</a>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
 	function clip_board_copy(){

@@ -1,22 +1,83 @@
 {% extends "home/base.html" %}
-{% load bootstrap4 %}
 
-{% block title %}イベントの編集{% endblock title %}
+{% block title %}イベント編集- 都合くん「この日空いてるっすか。」{% endblock title %}
 
 {% block content %}
-    <h4 class="mt-4 mb-5 border-bottom">イベントの編集</h4>
-    {% if event_id %}
-    <form action="{% url 'home:event_mod' event_id=event_id %}" method="post">
-    {% else %}
-    <form action="{% url 'home:event_add' %}" method="post">
-    {% endif %}
-      {% csrf_token %}
-      {% bootstrap_form form layout='horizontal' %}
-      <div class="form-group row">
-        <div class="offset-md-3 col-md-9">
-          <button type="submit" class="btn btn-primary">送信</button>
+<div class=" row d-flex justify-content-center my-5">
+    <div class="col-10">
+        <div class="card rounded">
+            <div class="card-body">
+                <form action="{% url 'home:event_add' %}" method="post">
+
+                    <div class="form-row">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <input type="hidden" name="key" value="{{ schedule_update_id }}">
+                    </div>
+                    <div class="form-row form-group mt-3">
+                        <div class="col-3">
+                            <h5 class="hissu">イベント名</h5>
+                        </div>
+                        <div class="col-9 pl-4">
+                            <input type="text" class="form-control" id="name" name="name"
+                                   value="{{ current_event_name }}" placeholder="イベント名">
+                            {{ form.name.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row form-group mt-5">
+                        <div class="col-3">
+                            <h5>イベントメモ</h5>
+                        </div>
+                        <div class="col-9 pl-4">
+                            <textarea class="form-control" id="memo" name="memo"
+                                      rows="5">{{ current_event_memo }}</textarea>
+                            {{ form.memo.errors }}
+                        </div>
+                    </div>
+                    <div class="form-row mt-5">
+                        <div class="col-3">
+                            <h5>イベント日時削除</h5>取り消したい日時があれば選択してください
+                        </div>
+                        <div class="col-9 pl-4">
+                            {% for eve_dt_kouho_id, event_datetime_str in event_datetime_dict.items %}
+                            <span style="display: inline-block;" class="mr-5">
+                                <input type="checkbox"
+                                       name="del_eve_dt_kouho_id_{{ eve_dt_kouho_id }}"
+                                       value="{{ eve_dt_kouho_id }}">
+                                {{ event_datetime_str }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="form-row mt-5">
+                        <div class="col-3">
+                            <h5>イベント日時追加</h5>追加したい日時があれば入力してください
+                        </div>
+                        <div class="col-9 pl-2">
+                            <div class="col-6" style="float: left">
+                                <div class="form-group">
+                                        <textarea class="form-control" id="event_datetime_kouho"
+                                                  name="event_datetime_kouho"
+                                                  rows="12"></textarea>
+                                    {{ form.event_datetime_kouho.errors }}
+                                </div>
+                            </div>
+                            <div class="col-6" style="float: right">
+                                <div class="form-group">
+                                    <div id="eventDateTimeCalendar"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-row mt-2 float-right">
+                        <button type="submit" class="btn btn-primary">イベント情報を修正する</button>
+                    </div>
+
+                </form>
+            </div>
         </div>
-      </div>
-    </form>
-    <a href="{% url 'home:event_list' %}" class="btn btn-secondary btn-sm">戻る</a>
+    </div>
+
+</div>
+
 {% endblock content %}

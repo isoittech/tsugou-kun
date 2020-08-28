@@ -16,7 +16,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.urls import reverse
 
 from home import helpers, constants
-from home.forms import EventForm, EventSankakahiForm
+from home.forms import EventForm, EventSankakahiForm, EventEditForm
 from home.models import Event, EventKouhoNichiji, SankaNichiji, Sankasha
 
 
@@ -31,27 +31,58 @@ def index(request):  # 追加
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-# イベント追加関数
+# イベント追加・編集関数
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 def event_add(request):
     """イベントの追加"""
-    form = EventForm(request.POST)  # POST された request データからフォームを作成
+
+    # ===================================================
+    # パラメータ取得
+    # ===================================================
+    # ------------------------
+    # EventテーブルID
+    # ------------------------
+    schedule_update_id = request.POST.get('key')
+    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
+    # イベント追加画面から来た（True）のか、編集画面から来たのか
+    is_event_add = event_id == None
+
+    # ------------------------
+    # 削除対象のイベント日時候補ID調査
+    # ------------------------
+    del_event_datetime_kouho_id_list = {}
+    for key in request.POST:
+        if 'del_eve_dt_kouho_id_' in key:
+            del_event_datetime_kouho_id_list[key] = request.POST[key]
+
+    # POST された request データからフォームを作成
+    form = EventForm(request.POST) if is_event_add else EventEditForm(request.POST)
+
     if form.is_valid():  # フォームのバリデーション
         with transaction.atomic():
             # ===================================================
             # 保存対象モデルデータ作成
-            # ※Eventはフォームデータから作成する。
             # ===================================================
             event = form.save(commit=False)
 
             # ===================================================
             # 保存処理 #1
             # ===================================================
-            event.save()
+            if is_event_add:
+                # スケジュール更新ページIDが渡されなかった場合のみ保存する
+                event.save()
+            else:
+                # スケジュール更新ページIDが渡された場合は既存レコードを保存対象とする
+                event.id = event_id
 
             # ===================================================
-            # ここから保存処理#2用処理
+            # イベント日時候補レコード削除
+            # ※編集画面にて削除を選択された日時がある場合の処理
             # ===================================================
+            if not is_event_add:
+                for del_id in del_event_datetime_kouho_id_list.values():
+                    # Deleteクエリが対象数分繰り替えされるが少数であると考えられるのでこれで削除する
+                    EventKouhoNichiji.objects.filter(id=del_id).delete()
 
             # ===================================================
             # イベント日時候補レコード作成処理
@@ -64,21 +95,24 @@ def event_add(request):
             # 保存対象データ設定処理
             # ===================================================
             # ------------------------
-            # Event
+            # イベント
             # ------------------------
             # スケジュール更新ページID
             schedule_update_id = helpers.create_schedule_update_id(event.id)
             event.schedule_update_id = schedule_update_id
 
             # ------------------------
-            # EventKouhoNichiji
+            # イベント日時候補
             # ------------------------
-            eventKouhoNichijis = [EventKouhoNichiji(event=event, kouho_nichiji=event_datetime_kouho) for event_datetime_kouho in event_datetime_kouhos]
+            eventKouhoNichijis = []
+            for event_datetime_kouho in event_datetime_kouhos:
+                if event_datetime_kouho != '':
+                    eventKouhoNichijis.append(EventKouhoNichiji(event=event, kouho_nichiji=event_datetime_kouho))
 
             # ===================================================
             # 保存処理 #2
             # ===================================================
-            EventKouhoNichiji.objects.bulk_create(eventKouhoNichijis)
+            if len(eventKouhoNichijis) != 0: EventKouhoNichiji.objects.bulk_create(eventKouhoNichijis)
             event.save()
 
         # ===================================================
@@ -103,7 +137,10 @@ def event_add(request):
     # ===================================================
     # フォームバリデーションエラー時の次画面遷移
     # ===================================================
-    return render(request, 'home/top.html', dict(form=form))
+    if is_event_add:
+        return render(request, 'home/top.html', dict(form=form))
+    else:
+        return render(request, 'home/event_edit.html', dict(form=form))
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -398,26 +435,52 @@ def event_list(request):
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-# イベント追加・編集関数
+# イベント追加・編集画面表示準備 関数
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-def event_edit(request, event_id=None):
-    """イベントの編集"""
-    # return HttpResponse('書籍の編集')
-    if event_id:  # event_id が指定されている (修正時)
-        event = get_object_or_404(Event, pk=event_id)
-    else:  # event_id が指定されていない (追加時)
-        event = Event()
+def event_edit_prepare(request):
+    """イベント編集画面"""
 
-    if request.method == 'POST':
-        form = EventForm(request.POST, instance=event)  # POST された request データからフォームを作成
-        if form.is_valid():  # フォームのバリデーション
-            event = form.save(commit=False)
-            event.save()
-            return redirect('home:event_list')
-    else:  # GET の時
-        form = EventForm(instance=event)  # event インスタンスからフォームを作成
+    # ===================================================
+    # パラメータ取得
+    # ===================================================
+    # ------------------------
+    # スケジュール更新ページID
+    # ------------------------
+    schedule_update_id = request.GET.get('key')
+    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
 
-    return render(request, 'home/event_edit.html', dict(form=form, event_id=event_id))
+    # ===================================================
+    # DBデータ取得
+    # ===================================================
+    # ------------------------
+    # イベントレコード
+    # ------------------------
+    event = Event.objects.get(pk=event_id)
+    # ------------------------
+    # イベント日時候補レコード
+    # ------------------------
+    result = EventKouhoNichiji.objects.filter(event=event)
+    event_kouho_nichiji_list = [entry for entry in result]
+
+    # ===================================================
+    # テンプレートへ渡すパラメータ準備
+    # ===================================================
+    # イベント日時候補辞書
+    event_datetime_dict = {}
+    for event_kouho_nichiji in event_kouho_nichiji_list:
+        event_datetime_dict[event_kouho_nichiji.id] = event_kouho_nichiji.kouho_nichiji
+    # 渡すパラメータの入れ物
+    current_value_dict = {
+        'schedule_update_id': schedule_update_id,
+        'current_event_name': event.name,
+        'current_event_memo': event.memo,
+        'event_datetime_dict': event_datetime_dict
+    }
+
+    # ===================================================
+    # 遷移
+    # ===================================================
+    return render(request, 'home/event_edit.html', dict(current_value_dict))
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
