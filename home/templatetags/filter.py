@@ -23,3 +23,9 @@ def to_symbol(value):
         return constants.SANKA_KIGOU_BATSU
     else:
         return constants.SANKA_KIGOU_MINYUURYOKU
+
+
+@register.filter(name='contains_in')
+def contains_in(value, contains_in):
+    print(value)
+    return contains_in in str(value)

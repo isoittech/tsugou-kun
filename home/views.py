@@ -17,6 +17,7 @@ from django.urls import reverse
 
 from home import helpers, constants
 from home.forms import EventForm, EventSankakahiForm, EventEditForm
+from home.helpers import get_event_datetime_dict
 from home.models import Event, EventKouhoNichiji, SankaNichiji, Sankasha
 
 
@@ -34,7 +35,9 @@ def index(request):  # 追加
 # イベント追加・編集関数
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 def event_add(request):
-    """イベントの追加"""
+    """
+    イベントの追加・編集
+    """
 
     # ===================================================
     # パラメータ取得
@@ -43,20 +46,37 @@ def event_add(request):
     # EventテーブルID
     # ------------------------
     schedule_update_id = request.POST.get('key')
-    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
-    # イベント追加画面から来た（True）のか、編集画面から来たのか
-    is_event_add = event_id == None
+    # イベント追加画面（新規登録）から来た（True）のか、編集画面から来たのか
+    is_event_add = schedule_update_id == None
+    if not is_event_add:
+        event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
 
     # ------------------------
     # 削除対象のイベント日時候補ID調査
     # ------------------------
     del_event_datetime_kouho_id_list = {}
-    for key in request.POST:
-        if 'del_eve_dt_kouho_id_' in key:
-            del_event_datetime_kouho_id_list[key] = request.POST[key]
+    if not is_event_add:
+        for key in request.POST:
+            if 'del_eve_dt_kouho_id_' in key:
+                del_event_datetime_kouho_id_list[key] = request.POST[key]
 
-    # POST された request データからフォームを作成
-    form = EventForm(request.POST) if is_event_add else EventEditForm(request.POST)
+    # ===================================================
+    # Formオブジェクト作成
+    # ===================================================
+    if is_event_add:
+        # イベント追加画面（新規登録）から来たとき
+        form = EventForm(request.POST)
+    else:
+        # イベント編集画面から来たとき
+        event = Event.objects.get(pk=event_id)
+        event_datetime_dict = get_event_datetime_dict(event)
+        # パラメータ3,4は、チェックボックス（表示とチェック状態）を準備するために使う
+        form = EventEditForm(
+            request.POST,  # 1.
+            key=schedule_update_id,  # 2.
+            event_datetime_dict=event_datetime_dict,  # 3. 削除対象候補チェックボックス全量
+            del_event_datetime_kouho_id_list=del_event_datetime_kouho_id_list  # 4. 前画面でのチェック済チェックボックス
+        )
 
     if form.is_valid():  # フォームのバリデーション
         with transaction.atomic():
@@ -67,6 +87,7 @@ def event_add(request):
 
             # ===================================================
             # 保存処理 #1
+            # ※2つに分けている理由：新規登録の場合、一旦保存しないとPKが採番されないため。
             # ===================================================
             if is_event_add:
                 # スケジュール更新ページIDが渡されなかった場合のみ保存する
@@ -138,9 +159,12 @@ def event_add(request):
     # フォームバリデーションエラー時の次画面遷移
     # ===================================================
     if is_event_add:
+        # イベント新規登録画面（TOP画面）へ遷移
         return render(request, 'home/top.html', dict(form=form))
     else:
-        return render(request, 'home/event_edit.html', dict(form=form))
+        # イベント編集画面へ遷移
+        params = dict(form=form)
+        return render(request, 'home/event_edit.html', params)
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -456,36 +480,43 @@ def event_edit_prepare(request):
     # イベントレコード
     # ------------------------
     event = Event.objects.get(pk=event_id)
-    # ------------------------
-    # イベント日時候補レコード
-    # ------------------------
-    result = EventKouhoNichiji.objects.filter(event=event)
-    event_kouho_nichiji_list = [entry for entry in result]
 
     # ===================================================
     # テンプレートへ渡すパラメータ準備
     # ===================================================
+    # ------------------------
     # イベント日時候補辞書
-    event_datetime_dict = {}
-    for event_kouho_nichiji in event_kouho_nichiji_list:
-        event_datetime_dict[event_kouho_nichiji.id] = event_kouho_nichiji.kouho_nichiji
-    # 渡すパラメータの入れ物
-    current_value_dict = {
-        'schedule_update_id': schedule_update_id,
-        'current_event_name': event.name,
-        'current_event_memo': event.memo,
-        'event_datetime_dict': event_datetime_dict
+    # ------------------------
+    event_datetime_dict = get_event_datetime_dict(event)
+    # ------------------------
+    # 入力フォーム初期値準備1（単純に渡せるもの）
+    # ------------------------
+    data = {
+        'name': event.name,
+        'memo': event.memo,
     }
+
+    # ------------------------
+    # 入力フォーム初期値準備2（単純に渡せないもの）
+    # ------------------------
+    # パラメータ3,4は、チェックボックス（表示とチェック状態）を準備するために使う
+    form = EventEditForm(
+        data,  # 1.
+        key=schedule_update_id,  # 2.
+        event_datetime_dict=event_datetime_dict,  # 3. 削除対象候補チェックボックス全量
+        del_event_datetime_kouho_id_list={}  # 4. 前画面でのチェック済チェックボックス
+    )
 
     # ===================================================
     # 遷移
     # ===================================================
-    return render(request, 'home/event_edit.html', dict(current_value_dict))
+    params = dict(form=form)
+    params['event_datetime_dict'] = event_datetime_dict
+    return render(request, 'home/event_edit.html', params)
 
-
-# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-# イベント削除関数
-# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+    # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+    # イベント削除関数
+    # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 def event_del(request, event_id):
     """イベントの削除"""
     # return HttpResponse('イベントの削除')

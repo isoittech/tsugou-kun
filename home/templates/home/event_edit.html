@@ -1,4 +1,5 @@
 {% extends "home/base.html" %}
+{% load filter %}
 
 {% block title %}イベント編集- 都合くん「この日空いてるっすか。」{% endblock title %}
 
@@ -12,7 +13,8 @@
                     <div class="form-row">
                         {% csrf_token %}
                         {{ form.non_field_errors }}
-                        <input type="hidden" name="key" value="{{ schedule_update_id }}">
+                        <input type="hidden" name="key"
+                               value="{{ form.key.value }}">
                     </div>
                     <div class="form-row form-group mt-3">
                         <div class="col-3">
@@ -20,7 +22,7 @@
                         </div>
                         <div class="col-9 pl-4">
                             <input type="text" class="form-control" id="name" name="name"
-                                   value="{{ current_event_name }}" placeholder="イベント名">
+                                   value="{{ form.name.value }}" placeholder="イベント名">
                             {{ form.name.errors }}
                         </div>
                     </div>
@@ -30,35 +32,39 @@
                         </div>
                         <div class="col-9 pl-4">
                             <textarea class="form-control" id="memo" name="memo"
-                                      rows="5">{{ current_event_memo }}</textarea>
+                                      rows="5">{{ form.memo.value }}</textarea>
                             {{ form.memo.errors }}
                         </div>
                     </div>
                     <div class="form-row mt-5">
                         <div class="col-3">
-                            <h5>イベント日時削除</h5>取り消したい日時があれば選択してください
+                            <h5>イベント日時削除</h5><small class="form-text text-muted">取り消したい日時があれば<br>選択してください</small>
                         </div>
                         <div class="col-9 pl-4">
-                            {% for eve_dt_kouho_id, event_datetime_str in event_datetime_dict.items %}
+                            {% for field in form %}
+                            <!-- field変数の中に特定の文字列を調べるコードが機能しないため、苦肉の策でこの形となっている -->
+                            {% with contains_chkbox=field|contains_in:'del_eve_dt_kouho_id_' %}
+                            {% if contains_chkbox %}
                             <span style="display: inline-block;" class="mr-5">
-                                <input type="checkbox"
-                                       name="del_eve_dt_kouho_id_{{ eve_dt_kouho_id }}"
-                                       value="{{ eve_dt_kouho_id }}">
-                                {{ event_datetime_str }}
+                                        {{ field }}
+                                        {{ field.label }}
                             </span>
+                            {% endif %}
+                            {% endwith %}
+                            <!-- 苦肉end -->
                             {% endfor %}
                         </div>
                     </div>
                     <div class="form-row mt-5">
                         <div class="col-3">
-                            <h5>イベント日時追加</h5>追加したい日時があれば入力してください
+                            <h5>イベント日時追加</h5><small class="form-text text-muted">追加したい日時があれば<br>入力してください</small>
                         </div>
                         <div class="col-9 pl-2">
                             <div class="col-6" style="float: left">
                                 <div class="form-group">
                                         <textarea class="form-control" id="event_datetime_kouho"
                                                   name="event_datetime_kouho"
-                                                  rows="12"></textarea>
+                                                  rows="12">{{ form.event_datetime_kouho.value }}</textarea>
                                     {{ form.event_datetime_kouho.errors }}
                                 </div>
                             </div>

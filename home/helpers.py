@@ -2,6 +2,8 @@ import base64
 import os
 import re
 
+from home.models import EventKouhoNichiji
+
 CRYPT_SEED_FOR_ID = 'CRYPT_SEED_FOR_ID'
 CRYPT_SEED_FOR_ANSHOU_NUM = 'CRYPT_SEED_FOR_ANSHOU_NUM'
 LINE_FEED_CD = os.linesep
@@ -68,3 +70,27 @@ def get_event_datetime_kouhos(event_datetime_kouho_str):
     except Exception as e:
         print('[ERROR] get_event_datetime_kouhosでエラー。引数:{}'.format(event_datetime_kouho_str))
         raise e
+
+
+def get_event_datetime_dict(event):
+    """
+    イベント日時候補辞書を返却する。
+    :param event: イベントテーブル
+    :return: 下記形式のイベント日時候補辞書
+        key: イベント日時候補テーブルID
+        value: イベント日時候補文字列（X月Y日Z時等）
+    """
+    # ------------------------
+    # イベント日時候補レコード
+    # ------------------------
+    result = EventKouhoNichiji.objects.filter(event=event)
+    event_kouho_nichiji_list = [entry for entry in result]
+
+    # ===================================================
+    # イベント日時候補辞書
+    # ===================================================
+    event_datetime_dict = {}
+    for event_kouho_nichiji in event_kouho_nichiji_list:
+        event_datetime_dict[event_kouho_nichiji.id] = event_kouho_nichiji.kouho_nichiji
+
+    return event_datetime_dict
