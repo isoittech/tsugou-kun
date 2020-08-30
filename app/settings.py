@@ -12,20 +12,19 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 
 import os
 
+import dj_database_url
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'v5n+o-2t6rk18xc_2s2-py#+c)uh)wjj6t_(1hmxi72co3)589'
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.herokuapp.com']
+# ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -49,6 +48,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = 'app.urls'
@@ -77,21 +77,12 @@ WSGI_APPLICATION = 'app.wsgi.application'
 
 DATABASES = {
     'default': {
-        # 'ENGINE': 'django.db.backends.sqlite3', # DEFAULT
-        # 'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # DEFAULT
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'tsugoukun',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'localhost',
+        'NAME': 'd2qopavs3869e3',
+        'USER': 'pokzhpcbpuhthj',
+        'PASSWORD': '0c51794595ba770ba067ebbaed58130fe433ab989bc5f93b79dc5e793316672f',
+        'HOST': 'ec2-34-236-215-156.compute-1.amazonaws.com',
         'PORT': '5432',
-        # 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        # 'NAME': 'd5gmg6ujvs0sli',
-        # 'USER': 'vurymddshqrfoe',
-        # 'PASSWORD': '72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682',
-        # 'HOST': 'postgres://vurymddshqrfoe:72886c2662a27269beac1da7edfd7fdbd7956499963b7892468d732406768682@ec2-34-236-215-156.compute-1.amazonaws.com:5432/d5gmg6ujvs0sli',
-        # 'PORT': '5432',
-
     }
 }
 
@@ -150,3 +141,19 @@ LOGGING = {
         },
     }
 }
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+try:
+    from .local_settings import *
+except ImportError:
+    pass
+
+if not DEBUG:
+    SECRET_KEY = os.environ['SECRET_KEY']
+    import django_heroku
+
+    django_heroku.settings(locals())
+
+db_from_env = dj_database_url.config(conn_max_age=600, ssl_require=True)
+DATABASES['default'].update(db_from_env)

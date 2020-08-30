@@ -1,5 +1,5 @@
 {% extends "home/base.html" %}
-{% load filter %}
+{% load filter static %}
 
 {% block title %}イベント編集- 都合くん「この日空いてるっすか。」{% endblock title %}
 
@@ -85,5 +85,6 @@
     </div>
 
 </div>
+<div class="rightBottomFixed"><img src="{% static 'home/img/page_top.png' %}"></div>
 
 {% endblock content %}
