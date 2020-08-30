@@ -27,5 +27,11 @@ def to_symbol(value):
 
 @register.filter(name='contains_in')
 def contains_in(value, contains_in):
-    print(value)
     return contains_in in str(value)
+
+
+@register.filter(name='split')
+def split(value, separator_with_idx):
+    separator = separator_with_idx.split(':')[0]
+    idx = separator_with_idx.split(':')[1]
+    return value.split(separator)[idx]

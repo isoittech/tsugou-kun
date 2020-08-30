@@ -13,8 +13,7 @@
                     <div class="form-row">
                         {% csrf_token %}
                         {{ form.non_field_errors }}
-                        <input type="hidden" name="key"
-                               value="{{ form.key.value }}">
+                        <input type="hidden" name="key" value="{{ form.key.value }}">
                     </div>
                     <div class="form-row form-group mt-3">
                         <div class="col-3">
@@ -85,6 +84,4 @@
     </div>
 
 </div>
-<div class="rightBottomFixed"><img src="{% static 'home/img/page_top.png' %}"></div>
-
 {% endblock content %}

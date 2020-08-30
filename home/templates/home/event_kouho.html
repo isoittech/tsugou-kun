@@ -10,10 +10,6 @@ $(function () {
         $("html,body").animate({scrollTop:$('#sanka_kahi_area').offset().top});
     })
 
-    $('.rightBottomFixed').click(function(){
-        $('html,body').animate({'scrollTop':0},500);
-    });
-
     $('a.event_sankashamei_link').click(function(){
         var eventSankashaInfo = $(this).next().val();
         var eventSankashaInfos = eventSankashaInfo.split(',');
@@ -36,13 +32,17 @@ $(function () {
 
         // 参加可否回答フォームを開く
         // 開いている状態（class属性にshowがある状態）は遷移する。
-        // 開いていない状態（class属性にshowがない状態）はcollapseする。
+        // 開いていない状態（class属性にshowがない状態）はオープンする。
         if($('#sanka_kahi_area').is('[class*="show"]')){
             $("html,body").animate({scrollTop:$('#sanka_kahi_area').offset().top});
         } else {
             $('#sanka_kahi_area').collapse('show');
         }
     });
+
+    if($('#sanka_kahi_area_open').val() === 'true') {
+        $('#sanka_kahi_area').collapse('show');
+    }
 });
 
 
@@ -120,12 +120,18 @@ $(function () {
                                 {{ form.non_field_errors }}
                                 <input type="hidden" name="key" value="{{ schedule_update_id }}">
                                 <input type="hidden" id="sankasha_id" name="sankasha_id" value="">
+                                <input type="hidden" id="jsoned_params" name="jsoned_params"
+                                       value="{{ jsoned_params }}">
+                                <input type="hidden" id="sanka_kahi_area_open" name="sanka_kahi_area_open"
+                                       value="{{ sanka_kahi_area_open }}">
                             </div>
                             <div class="form-group">
                                 <label for="sankasha_name" class="hissu">名前</label>
                                 <input type="text" class="form-control" id="sankasha_name" name="name"
-                                       aria-describedby="sankashaNameHelp" placeholder="名前・ニックネーム">
+                                       aria-describedby="sankashaNameHelp" placeholder="名前・ニックネーム"
+                                       value="{{ form.name.value }}">
                                 <small id="sankashaNameHelp" class="form-text text-muted">絵文字は入れられません。</small>
+                                {{ form.name.errors }}
                             </div>
                             <div class="form-group">
                                 <label>イベント日時候補</label>
@@ -139,26 +145,45 @@ $(function () {
                                     </tr>
                                     </thead>
                                     <tbody>
-                                    {% for event_sanka_table_dict in event_sanka_table_dict_list %}
+                                    {% for event_sanka_fill_table_dict in event_sanka_fill_table_dict_list %}
+                                    {% comment %}
+                                    <!-- ===========================================================================
+                                    ----------------------------
+                                    event_sanka_fill_table_dict 形式
+                                    ----------------------------
+                                    nichiji: イベント日時候補文字列（例：X月Y日Z時）
+                                    event_nichizi_kouho_id: イベント日時候補テーブルID
+                                    selected_value: 選択肢に対応する値（1,2,3）※初期表示は0。
+                                    ================================================================================ -->
+                                    {% endcomment %}
                                     <tr>
-                                        <th>{{ event_sanka_table_dict.nichiji }}</th>
+                                        <th>{{ event_sanka_fill_table_dict.nichiji }}</th>
                                         <td>
                                             <input class="form-check-input centered-radio" type="radio"
-                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   value="1">
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   value="1"
+                                                   {% ifequal event_sanka_fill_table_dict.selected_value "1" %}
+                                            checked
+                                            {% endifequal %}>
                                         </td>
                                         <td>
                                             <input class="form-check-input centered-radio" type="radio"
-                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   value="2">
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   value="2"
+                                                   {% ifequal event_sanka_fill_table_dict.selected_value "2" %}
+                                            checked
+                                            {% endifequal %}>
                                         </td>
                                         <td>
                                             <input class="form-check-input centered-radio" type="radio"
-                                                   name="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   id="event_nichizi_kouho_id_{{ event_sanka_table_dict.event_nichizi_kouho_id }}"
-                                                   value="3">
+                                                   name="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   id="event_nichizi_kouho_id_{{ event_sanka_fill_table_dict.event_nichizi_kouho_id }}"
+                                                   value="3"
+                                                   {% ifequal event_sanka_fill_table_dict.selected_value "3" %}
+                                            checked
+                                            {% endifequal %}>
                                         </td>
                                     </tr>
                                     {% endfor %}
@@ -167,7 +192,7 @@ $(function () {
                             </div>
                             <div class="form-group">
                                 <label for="comment">コメント</label>
-                                <input type="text" class="form-control" id="comment"
+                                <input type="text" class="form-control" id="comment" value="{{ form.comment.value }}"
                                        name="comment" placeholder="コメント・言い訳・感謝、何でもどうぞ。">
                             </div>
                             <div class="form-group d-flex justify-content-end">
@@ -182,6 +207,5 @@ $(function () {
     </div>
 
 </div>
-<div class="rightBottomFixed"><img src="{% static 'home/img/page_top.png' %}"></div>
 
 {% endblock content %}

@@ -8,7 +8,7 @@
 # TODO イベント日時候補テーブルに関する変数名・表記揺れ
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-
+import json
 from urllib.parse import urlencode
 
 from django.db import transaction
@@ -332,21 +332,42 @@ def event_kouho_print(request):
     # {イベント日時候補テーブルID: {event_nichizi_kouho_id: イベント日時候補テーブルID, nichiji: 参加日時文字列, maru: ○の数, sankaku: △の数, batsu: ✕の数, 参加者1の名前: 参加者1の参加可否, 参加者2の名前: 参加者2の参加可否, …}}
     event_sanka_table_dict_list.extend(event_sanka_shuukei_dict_dict.values())
 
+    # ------------------------
+    # 描画用データ作成処理(4)
+    # イベント参加者記入用radioフォーム描画用の配列
+    # データ形式：下記形式辞書の配列
+    # {nichiji: イベント日時候補文字列（例：X月Y日Z時）, event_nichizi_kouho_id: イベント日時候補テーブルID, selected_value: 選択肢に対応する値（1,2,3）}
+    # ------------------------
+    event_sanka_fill_table_dict_list = []
+    for event_kouho_nichiji in event_kouho_nichiji_list:
+        event_sanka_fill_table_dict = {}
+        event_sanka_fill_table_dict['nichiji'] = event_kouho_nichiji.kouho_nichiji
+        event_sanka_fill_table_dict['event_nichizi_kouho_id'] = event_kouho_nichiji.id
+        event_sanka_fill_table_dict['selected_value'] = 0
+        event_sanka_fill_table_dict_list.append(event_sanka_fill_table_dict)
 
     # ===================================================
     # 次画面遷移
     # ===================================================
+    params = {  # テンプレートに渡すデータ
+        'event_name': event.name,
+        'event_memo': event.memo,
+        'event_sanka_table_dict_list': event_sanka_table_dict_list,
+        'event_sankasha_dict': event_sankasha_dict,
+        'event_sankasha_comments': event_sankasha_comments,
+        'schedule_update_id': schedule_update_id,  # スケジュール更新ページID
+        'event_sanka_fill_table_dict_list': event_sanka_fill_table_dict_list
+    }
+
+    # 各個人のスケジュール更新画面で入力・Submit後、エラーが発生して、
+    # 当該画面へ遷移した時に描画できるよう、この関数で準備したパラメータをそのまま渡す（jsonにして）
+    jsoned_params = json.dumps(params)
+    params['jsoned_params'] = jsoned_params
+
     return render(
         request,
         'home/event_kouho.html',  # 使用するテンプレート
-        {  # テンプレートに渡すデータ
-            'event_name': event.name,
-            'event_memo': event.memo,
-            'event_sanka_table_dict_list': event_sanka_table_dict_list,
-            'event_sankasha_dict': event_sankasha_dict,
-            'event_sankasha_comments': event_sankasha_comments,
-            'schedule_update_id': schedule_update_id,  # スケジュール更新ページID
-        }
+        params
     )
 
 
@@ -366,13 +387,26 @@ def schedule_fill(request):
     event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
     sankasha_id = request.POST.get('sankasha_id')
 
+    # ===================================================
+    # DBデータ取得
+    # ===================================================
+    # ===================================================
+    # イベントテーブル
+    # ===================================================
+    event = Event.objects.get(pk=event_id)
+
+    # ------------------------
+    # イベント候補日時テーブル
+    # ------------------------
+    event_kouho_nichiji_list = EventKouhoNichiji.objects.filter(event=event)
+    event_kouho_nichiji_list = [entry for entry in event_kouho_nichiji_list]
+
+    # ===================================================
+    # バリデーション・保存処理
+    # ===================================================
     form = EventSankakahiForm(request.POST)  # POST された request データからフォームを作成
     if form.is_valid():  # フォームのバリデーション
         with transaction.atomic():
-            # ===================================================
-            # イベントデータ取得
-            # ===================================================
-            event = Event.objects.get(pk=event_id)
 
             # ===================================================
             # 保存対象モデルデータ作成
@@ -395,12 +429,6 @@ def schedule_fill(request):
             # ===================================================
             # 参加日時レコードをイベント候補日時レコード数分作成
             # ===================================================
-            # ------------------------
-            # まずEventテーブルIDをキーにイベント候補日時テーブルレコードリストを取得
-            # ------------------------
-            event_kouho_nichiji_list = EventKouhoNichiji.objects.filter(event=event)
-            event_kouho_nichiji_list = [entry for entry in event_kouho_nichiji_list]
-
             # ------------------------
             # イベント候補日時テーブルレコードリストでループ
             # ・参加日時レコード生成
@@ -439,11 +467,32 @@ def schedule_fill(request):
         return redirect(url)
 
     # ===================================================
-    # フォームバリデーションエラー時の次画面遷移
+    # フォームバリデーションエラー時の次画面遷移用パラメータ作成
     # ===================================================
-    # パラメータのdictをurlencodeする
+    # ------------------------
+    # イベント参加者記入用radioフォーム描画用の配列
+    # データ形式：下記形式辞書の配列
+    # {nichiji: イベント日時候補文字列（例：X月Y日Z時）, event_nichizi_kouho_id: イベント日時候補テーブルID, selected_value: 選択肢に対応する値（1,2,3）}
+    # ------------------------
+    event_sanka_fill_table_dict_list = []
+    for event_kouho_nichiji in event_kouho_nichiji_list:
+        event_sanka_fill_table_dict = {}
+        event_sanka_fill_table_dict['nichiji'] = event_kouho_nichiji.kouho_nichiji
+        event_sanka_fill_table_dict['event_nichizi_kouho_id'] = event_kouho_nichiji.id
+        event_sanka_fill_table_dict['selected_value'] = form.data['event_nichizi_kouho_id_' + str(event_kouho_nichiji.id)]
+        event_sanka_fill_table_dict_list.append(event_sanka_fill_table_dict)
+
+    # ------------------------
+    # 他
+    # ------------------------
     params = dict(form=form)
     params['schedule_update_id'] = schedule_update_id
+    params['jsoned_params'] = request.POST['jsoned_params']  # そのまま引き継ぐ
+    params['sanka_kahi_area_open'] = 'true'
+    initial_params = json.loads(request.POST['jsoned_params'])  # 当該画面に元々表示されていた画面データ
+    params.update(initial_params)
+    params['event_sanka_fill_table_dict_list'] = event_sanka_fill_table_dict_list
+
     return render(request, 'home/event_kouho.html', params)
 
 
@@ -494,6 +543,8 @@ def event_edit_prepare(request):
     data = {
         'name': event.name,
         'memo': event.memo,
+        'key': schedule_update_id,
+        'event_datetime_kouho': '',
     }
 
     # ------------------------
