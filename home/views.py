@@ -210,7 +210,7 @@ def event_kouho_print(request):
     # ------------------------
     # イベント日時候補レコード
     # ------------------------
-    result = EventKouhoNichiji.objects.filter(event=event)
+    result = EventKouhoNichiji.objects.order_by('id').filter(event=event)
     event_kouho_nichiji_list = [entry for entry in result]
 
     # ------------------------
@@ -240,7 +240,7 @@ def event_kouho_print(request):
     # ------------------------
     event_sanka_list_dict = {}
     for event_kouho_nichiji in event_kouho_nichiji_list:
-        sanka_nichiji_list_of_a_datetime = SankaNichiji.objects.select_related('event_kouho_nichiji').filter(event_kouho_nichiji=event_kouho_nichiji)
+        sanka_nichiji_list_of_a_datetime = SankaNichiji.objects.select_related('event_kouho_nichiji').order_by('id').filter(event_kouho_nichiji=event_kouho_nichiji)
         sanka_nichiji_list_of_a_datetime = [entry for entry in sanka_nichiji_list_of_a_datetime]
         if len(sanka_nichiji_list_of_a_datetime) == 0:
             sanka_nichiji_list_of_a_datetime = [event_kouho_nichiji.kouho_nichiji]
@@ -398,7 +398,7 @@ def schedule_fill(request):
     # ------------------------
     # イベント候補日時テーブル
     # ------------------------
-    event_kouho_nichiji_list = EventKouhoNichiji.objects.filter(event=event)
+    event_kouho_nichiji_list = EventKouhoNichiji.objects.order_by('id').filter(event=event)
     event_kouho_nichiji_list = [entry for entry in event_kouho_nichiji_list]
 
     # ===================================================
