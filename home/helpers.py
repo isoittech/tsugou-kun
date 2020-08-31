@@ -66,7 +66,8 @@ def decode_from_encoded_anshou_num(encoded_anshou_num):
 
 def get_event_datetime_kouhos(event_datetime_kouho_str):
     try:
-        return event_datetime_kouho_str.split(LINE_FEED_CD)
+        event_datetime_kouho_str_list = event_datetime_kouho_str.split(LINE_FEED_CD)
+        return list(filter(lambda str: str != '', event_datetime_kouho_str_list))
     except Exception as e:
         print('[ERROR] get_event_datetime_kouhosでエラー。引数:{}'.format(event_datetime_kouho_str))
         raise e
