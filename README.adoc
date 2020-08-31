@@ -1,11 +1,11 @@
 = Tsugou-kun
 
 [%hardbreaks]
-調整さん（https://chouseisan.com/）のパクりサービス
+調整さん （https://chouseisan.com/ ）のパクりサービス。リスペクト！
 
 == ■開発メモ
 
-== ■環境構築
+== ■開発環境構築
 
 === ▼PyEnv
 
@@ -26,8 +26,8 @@ or $ conda activate ./.pyenv
 === ▼Package Install
 
 ```
-$ conda install -y django==2.2 sqlparse psycopg2 psycopg2-binary sqlalchemy
-$ pip install --no-input django-bootstrap4 Crypto
+$ conda install -y django==2.2 sqlparse psycopg2 whitenoise
+$ pip install --no-input Crypto dj-database-url
 
 ```
 
@@ -39,24 +39,11 @@ $ python manage.py startapp home # トップページ
 $ python manage.py runserver # 起動確認（http://localhost:8000/）
 ```
 
-=== ▼★ボツ（AWSでやるので。）★Herokuデプロイ準備・初回処理
+== ■ローカル環境構築（pipenv編）※まとめ未
 
-```
-$ echo web: gunicorn tsugou-kun.wsgi --log-file - > Procfile
-$ echo python-3.7.0 > runtime.txt
-$ pip install django-heroku gunicorn
-$ pip freeze > requirements.txt
+※8/31にpipenvの存在を知る。。
 
-$ vi app/settings.py
---------------------------
-DEBUG = False
-ALLOWED_HOSTS = ['*']
---------------------------
-
-<<git commit, push>>
-$ heroku login
-
-```
+$ (Pipfileをpip freezeの結果をもとに作成する) $ pip install pienv $ yum install postgresql-devel $ pipenv install
 
 === ▼DB設定・初期構築
 
@@ -113,18 +100,11 @@ Superuser created successfully.
 
 ==== ◎新規データベース構築
 
-[%hardbreaks]
-・`db/README.adoc` 参照
-・IDは`tsugoukun` 、PWもアプリ名で。
-
-==== ◎DB起動
-
-* db/に移動
-* ./h2.shを実行
+PostgreSQLをローカルにて起動。
 
 ==== ◎テーブル作成
 
-・`db/create.sql` に記載のSQLを実行する。
+不要。Djangoのマイグレーションツールで作成するため。
 
 ==== ◎DBライブラリ追加設定
 
@@ -135,12 +115,6 @@ Superuser created successfully.
 ```
 psycopg2.OperationalError: received invalid response to GSSAPI negotiation: R
 ```
-
-==== ◎DBクライアント設定
-
-[%hardbreaks]
-H2なので下記のように設定する。
-`jdbc:h2:tcp://localhost:5454/./tsugoukun`
 
 ==== ◎モデル変更時作業
 
@@ -163,3 +137,61 @@ admin.site.register(<<追加するモデルクラス名>>)
 admin.site.register(<<追加するモデルクラス名>>)
 -------------------------------------
 ```
+
+== ■本番環境構築
+
+```shell
+※sudo権限あり、docker/docker-composeインストール済前提
+$ mkdir -p /opt/app/tsugou-kun/app
+---
+上記ディレクトリに<tsugou-kun>/ディレクトリ配下を全てコピー（.で始まるディレクトリを除く）
+---
+$ cd /opt/app/tsugou-kun
+$ mv app/docker-compose.yml ./
+
+$ docker-compose down -v
+$ docker-compose up -d --build
+$ docker-compose exec django python manage.py migrate --noinput
+
+※ログ確認
+$ docker-compose logs
+※ログインして確認
+$ docker-compose exec <サービス名> /bin/bash
+※再起動
+$ docker-compose restart
+※一旦イメージ掃除
+$ docker-compose down --rmi all
+$ docker-compose rm <<container>>
+    rmオプション
+      -f, --force   Don't ask to confirm removal
+      -s, --stop    Stop the containers, if required, before removing
+      -v            Remove any anonymous volumes attached to containers
+      -a, --all     Deprecated - no effect.
+
+※必要ならDB管理ユーザを作成する
+$ cd /opt/app/tsugou-kun/app/
+$ python manage.py createsuperuser
+
+```
+
+```
+
+=== ボツ（別Linux環境で構築するため）▼★Herokuデプロイ用準備・初回処理
+
+```
+$ echo web: gunicorn tsugou-kun.wsgi --log-file - > Procfile
+$ echo python-3.7.0 > runtime.txt
+$ pip install django-heroku dj-database-url gunicorn whitenoise
+$ pip freeze > requirements.txt
+
+$ vi app/settings.py
+--------------------------
+DEBUG = False
+ALLOWED_HOSTS = ['*']
+--------------------------
+
+<<git commit, push>>
+$ heroku login
+
+```
+

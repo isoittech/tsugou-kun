@@ -479,7 +479,7 @@ def schedule_fill(request):
         event_sanka_fill_table_dict = {}
         event_sanka_fill_table_dict['nichiji'] = event_kouho_nichiji.kouho_nichiji
         event_sanka_fill_table_dict['event_nichizi_kouho_id'] = event_kouho_nichiji.id
-        event_sanka_fill_table_dict['selected_value'] = form.data['event_nichizi_kouho_id_' + str(event_kouho_nichiji.id)]
+        event_sanka_fill_table_dict['selected_value'] = form.data.get('event_nichizi_kouho_id_' + str(event_kouho_nichiji.id), 0)
         event_sanka_fill_table_dict_list.append(event_sanka_fill_table_dict)
 
     # ------------------------

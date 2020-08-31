@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  # サービス名は自由に設定
+  django:
+    # appディレクトリの中から`Dockerfile`を探す
+    build: ./app
+    # サービス起動後に入力されるコマンドを設定
+    # command: python manage.py runserver 0.0.0.0:8000
+    command: gunicorn app.wsgi:application --bind 0.0.0.0:8000
+    # データを永続化させる場合の設定。`host:container`でパスを記載
+    volumes:
+      - ./app/:/usr/src/app/
+    # 開放するポートを指定。`host:container`でポートを記載
+    ports:
+      - 8000:8000
+    # 環境変数を指定
+    environment:
+      - DEBUG=0
+      - SECRET_KEY='v5n+o-2t6rk18xc_2s2-py#+c)uh)wjj6t_(1hmxi72co3)589'
+      - DATABASE_ENGINE='django.db.backends.postgresql_psycopg2'
+      - DATABASE_DB=tsugoukun
+      - DATABASE_USER=postgres
+      - DATABASE_PASSWORD=postgres
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+    # 接続するサービスを指定
+    depends_on:
+      - postgres
+      - waitfordb
+
+  postgres:
+    # 公式からイメージをpull
+    image: postgres:11.4-alpine
+    # データベースの永続化
+    # ホストのディレクトリにマウントしない様に、先頭に`./`をつけない
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    # su権限を持つ、指定されたユーザーと同じ名前のデータベースを作成
+    # valueはdjangoサービスで指定したものと同じ様に記載する
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=tsugoukun
+
+  waitfordb:
+    image: dadarek/wait-for-dependencies
+    depends_on:
+      - postgres
+    command: postgres:5432
+
+
+# トップレベルに書く「名前付きvolumes」は複数サービスから参照できる
+volumes:
+  postgres_data:
