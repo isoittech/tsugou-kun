@@ -174,8 +174,6 @@ $ python manage.py createsuperuser
 
 ```
 
-```
-
 === ボツ（別Linux環境で構築するため）▼★Herokuデプロイ用準備・初回処理
 
 ```
