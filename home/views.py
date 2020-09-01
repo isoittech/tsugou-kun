@@ -12,12 +12,12 @@ import json
 from urllib.parse import urlencode
 
 from django.db import transaction
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
 
 from home import helpers, constants
 from home.forms import EventForm, EventSankakahiForm, EventEditForm
-from home.helpers import get_event_datetime_dict
+from home.helpers import get_event_datetime_dict, render_with_histories
 from home.models import Event, EventKouhoNichiji, SankaNichiji, Sankasha
 
 
@@ -27,8 +27,8 @@ from home.models import Event, EventKouhoNichiji, SankaNichiji, Sankasha
 def index(request):  # 追加
     """イベントの一覧"""
     events = Event.objects.all().order_by('id')
-    return render(request,
-                  'home/top.html')
+    return render_with_histories(request,
+                                 'home/top.html')
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -45,6 +45,7 @@ def event_add(request):
     # ------------------------
     # EventテーブルID
     # ------------------------
+    event_id = None
     schedule_update_id = request.POST.get('key')
     # イベント追加画面（新規登録）から来た（True）のか、編集画面から来たのか
     is_event_add = schedule_update_id == None
@@ -160,11 +161,11 @@ def event_add(request):
     # ===================================================
     if is_event_add:
         # イベント新規登録画面（TOP画面）へ遷移
-        return render(request, 'home/top.html', dict(form=form))
+        return render_with_histories(request, 'home/top.html', dict(form=form), event_id=event_id)
     else:
         # イベント編集画面へ遷移
         params = dict(form=form)
-        return render(request, 'home/event_edit.html', params)
+        return render_with_histories(request, 'home/event_edit.html', params, event_id=event_id)
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -175,13 +176,16 @@ def notify_event_add_completed(request):
     # ------------------------
     # スケジュール編集URLを取得する
     # ------------------------
-    parameters = urlencode({'key': request.GET.get('key')})
+    schedule_update_id = request.GET.get('key')
+    event_id = helpers.decode_from_schedule_update_id(schedule_update_id)
+    parameters = urlencode({'key': schedule_update_id})
     schedule_fill_url = reverse('home:event_kouho')
     schedule_fill_url = "{}://{}{}?{}".format(request.scheme, request.get_host(), schedule_fill_url, parameters)
 
-    return render(request,
-                  'home/notify_event_add_completed.html',  # 使用するテンプレート
-                  {'schedule_fill_url': schedule_fill_url})  # テンプレートに渡すデータ
+    return render_with_histories(request,
+                                 'home/notify_event_add_completed.html',  # 使用するテンプレート
+                                 {'schedule_fill_url': schedule_fill_url},  # テンプレートに渡すデータ
+                                 event_id=event_id)
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -364,10 +368,11 @@ def event_kouho_print(request):
     jsoned_params = json.dumps(params)
     params['jsoned_params'] = jsoned_params
 
-    return render(
+    return render_with_histories(
         request,
         'home/event_kouho.html',  # 使用するテンプレート
-        params
+        params,
+        event_id=event_id
     )
 
 
@@ -493,18 +498,7 @@ def schedule_fill(request):
     params.update(initial_params)
     params['event_sanka_fill_table_dict_list'] = event_sanka_fill_table_dict_list
 
-    return render(request, 'home/event_kouho.html', params)
-
-
-# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-# イベント一覧化関数
-# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-def event_list(request):
-    """イベントの一覧"""
-    events = Event.objects.all().order_by('id')
-    return render(request,
-                  'home/event_list.html',  # 使用するテンプレート
-                  {'events': events})  # テンプレートに渡すデータ
+    return render_with_histories(request, 'home/event_kouho.html', params, event_id=event_id)
 
 
 # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
@@ -563,11 +557,13 @@ def event_edit_prepare(request):
     # ===================================================
     params = dict(form=form)
     params['event_datetime_dict'] = event_datetime_dict
-    return render(request, 'home/event_edit.html', params)
+    return render_with_histories(request, 'home/event_edit.html', params, event_id=event_id)
 
-    # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
-    # イベント削除関数
-    # ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
+# イベント削除関数
+# TODO イベント削除関数は開発途中
+# ≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡≡
 def event_del(request, event_id):
     """イベントの削除"""
     # return HttpResponse('イベントの削除')

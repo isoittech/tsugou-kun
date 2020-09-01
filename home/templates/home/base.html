@@ -25,6 +25,33 @@
         {% block content %}
         {{ content }}
         {% endblock %}
+
+        <div id="event_history" class="card">
+            <div id="event_history_label" class="card-header">
+                最近このブラウザで閲覧したイベント
+            </div>
+            <div id="event_history_card_container" class="row d-flex justify-content-left pl-5 my-5">
+                {% if event_histories %}
+                {% for event_history in event_histories %}
+                <div class="card rounded col-3 my-2 mx-2 p-2">
+                    <div class="card-header">
+                        <a href="{{ event_history.schedule_fill_url }}">{{ event_history.event_name }}</a>
+                    </div>
+                    <div class="card-body">
+                        {% for event_kouho_nichiji in event_history.event_kouho_nichiji_list %}
+                        <div class="card m-1 p-1">
+                            {{ event_kouho_nichiji }}
+                        </div>
+                        {% endfor %} {# {% for event_kouho_nichiji in... #}
+                    </div>
+                </div>
+                {% endfor %} {# {% for event_history in event_histories %} #}
+                {% else %} {# {% if event_histories %} #}
+                今のところありません
+                {% endif %} {# {% if event_histories %} #}
+            </div>
+
+        </div>
         <div class="rightBottomFixed"><img src="{% static 'home/img/page_top.png' %}"></div>
     </div>
     {% block extra_js %}{% endblock %}

@@ -5,7 +5,6 @@ from . import views
 app_name = 'home'
 
 urlpatterns = [
-    path('event/', views.event_list, name='event_list'),  # 一覧
     path('event/add/', views.event_add, name='event_add'),  # 登録
     path('event/edit/', views.event_edit_prepare, name='event_edit_prepare'),  # 編集
     path('event/kouho/', views.event_kouho_print, name='event_kouho'),  # イベント日時候補
