@@ -36,7 +36,7 @@ https://www.mydns.jp/
 . 本フォルダの内容をアップロードする
 
 === MyDNSへのIPアドレス通知
-. crontabを仕掛け、MyDNSへのIPアドレス通知をcron化する
+. crontabを仕掛け、MyDNSへのIPアドレス通知をcron化する。まずこれをやり、IPアドレスをMyDNSに通知しないと、LetsEncryptのCertbotがエラー終了するので注意。
 +
 ```
 crontab -e

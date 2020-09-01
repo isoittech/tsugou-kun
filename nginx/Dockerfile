@@ -1,6 +1,6 @@
 FROM nginx:latest
 
-ENV LETSENCRYPT_HOSTS nuxtboot.isomurt.0g0.jp
+ENV LETSENCRYPT_HOSTS tsugoukun.0g0.jp
 ENV LETSENCRYPT_MAIL isoittech@gmail.com
 ENV LETSENCRYPT_SUBJECT "/C=JP/ST=Tokyo/L=Shinagawa/CN=default"
 

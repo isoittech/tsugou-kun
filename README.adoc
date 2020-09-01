@@ -2,6 +2,7 @@
 
 [%hardbreaks]
 調整さん （https://chouseisan.com/ ）のパクりサービス。リスペクト！
+また本資料は、開発者用のmemoである。
 
 == ■開発メモ
 
@@ -38,12 +39,6 @@ $ django-admin startproject app .
 $ python manage.py startapp home # トップページ
 $ python manage.py runserver # 起動確認（http://localhost:8000/）
 ```
-
-== ■ローカル環境構築（pipenv編）※まとめ未
-
-※8/31にpipenvの存在を知る。。
-
-$ (Pipfileをpip freezeの結果をもとに作成する) $ pip install pienv $ yum install postgresql-devel $ pipenv install
 
 === ▼DB設定・初期構築
 
@@ -174,6 +169,17 @@ $ python manage.py createsuperuser
 
 ```
 
+== ■ローカル環境構築（pipenv編）※まとめ未
+
+※8/31にpipenvの存在を知る。。
+```
+$ (Pipfileをpip freezeの結果をもとに作成する)
+$ pip install pienv
+$ yum install postgresql-devel
+$ pipenv install
+```
+
+== ボツ編
 === ボツ（別Linux環境で構築するため）▼★Herokuデプロイ用準備・初回処理
 
 ```
