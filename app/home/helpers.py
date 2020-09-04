@@ -182,7 +182,12 @@ def render_with_histories(request, template_name, context=None, event_id=None, c
     for schedule_update_id_XX, enc_event_id in schedule_update_id_dict.items():
         event_dict = {}
         each_event_id = decode_from_schedule_update_id(enc_event_id)
-        event = Event.objects.get(pk=each_event_id)
+
+        try:
+            event = Event.objects.get(pk=each_event_id)
+        except Event.DoesNotExist:
+            continue
+
         parameters = urlencode({'key': enc_event_id})
         schedule_fill_url = reverse('home:event_kouho')
         schedule_fill_url = "{}://{}{}?{}".format(request.scheme, request.get_host(), schedule_fill_url, parameters)
