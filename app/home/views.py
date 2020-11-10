@@ -14,7 +14,6 @@ from urllib.parse import urlencode
 from django.db import transaction
 from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse
-
 from home import helpers, constants
 from home.forms import EventForm, EventSankakahiForm, EventEditForm
 from home.helpers import get_event_datetime_dict, render_with_histories
@@ -105,6 +104,8 @@ def event_add(request):
                 for del_id in del_event_datetime_kouho_id_list.values():
                     # Deleteクエリが対象数分繰り替えされるが少数であると考えられるのでこれで削除する
                     EventKouhoNichiji.objects.filter(id=del_id).delete()
+                    # TODO 下記に変える
+                    # EventKouhoNichiji.objects.raw('DELETE FROM xxxx WHERE id IN (%s)', [','.join([del_event_datetime_kouho_id_list])])
 
             # ===================================================
             # イベント日時候補レコード作成処理
