@@ -1,20 +1,20 @@
 FROM nginx:latest
 
-ENV LETSENCRYPT_HOSTS stg.tsugoukun.0g0.jp
-ENV LETSENCRYPT_MAIL isoittech@gmail.com
-ENV LETSENCRYPT_SUBJECT "/C=JP/ST=Tokyo/L=Shinagawa/CN=default"
+ENV APP_PATH /var/www/html
 
-ENV DEBIAN_FRONTEND noninteractive
+WORKDIR $APP_PATH
 
-RUN apt-get update \
+RUN apt update \
+    && apt-get update \
     && apt-get install --yes --no-install-recommends \
       openssl \
       certbot \
       vim \
       less \
       curl \
+      net-tools \
+      iputils-ping \
+      procps \
+      cron \
     && rm -rf /var/lib/apt/lists/*
 
-COPY start.sh /start.sh
-RUN chmod +x /start.sh
-CMD /start.sh

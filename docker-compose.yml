@@ -59,34 +59,30 @@ services:
       - postgres
     command: postgres:5432
 
-  ######################################
-  # ホスト内共通のNginxコンテナを立てるようにしたので無効化
-  ######################################
-  # #############################################
-  # # Webサーバ
-  # #############################################
-  # nginx:
-  #   container_name: nginx
-  #   build:
-  #     context: ./nginx
-  #   environment:
-  #     TZ: Asia/Tokyo
-  #     LETSENCRYPT_HOSTS: stg.tsugoukun.0g0.jp
-  #     LETSENCRYPT_MAIL: isoittech@gmail.com
-  #     LETSENCRYPT_SUBJECT: "/C=JP/ST=Tokyo/L=Shinagawa/CN=default"
-  #   ports:
-  #     - "80:80"
-  #     - "443:443"
-  #   depends_on:
-  #     - django
-  #   volumes:
-  #     # nginx.conf
-  #     - ./nginx/nginx.conf:/etc/nginx/nginx.conf
-  #     # log directory
-  #     - /var/log/nginx:/var/log/nginx
-  #     # document root directory
-  #     #- /var/www/html:/var/www/html
-  #     - /opt/app/tsugou-kun/app:/usr/src/app
+  #############################################
+  # Webサーバ
+  # ※HTTPSサイトとして公開するため https://github.com/isoittech/HttpsSiteRouter を利用している。
+  #############################################
+  tsugou-kun-nginx:
+    container_name: tsugou-kun-nginx
+    build:
+      context: ./nginx
+    environment:
+      VIRTUAL_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
+      LETSENCRYPT_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
+      LETSENCRYPT_EMAIL: isoittech@gmail.com
+    volumes:
+      - ./html:/app
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - django
+
+networks:
+  default:
+    external:
+      # "docker network create --driver bridge shared"
+      # このコマンドを1ホストにつき1回実施すること。
+      name: shared
 
 # トップレベルに書く「名前付きvolumes」は複数サービスから参照できる
 volumes:
