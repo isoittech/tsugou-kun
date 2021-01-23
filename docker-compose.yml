@@ -62,6 +62,7 @@ services:
   #############################################
   # Webサーバ
   # ※HTTPSサイトとして公開するため https://github.com/isoittech/HttpsSiteRouter を利用している。
+  #   このdocker-composeで起動後、上記プロジェクトのコンテナを起動すること。やらないとホスト名解決＆HTTPS接続できない。
   #############################################
   tsugou-kun-nginx:
     container_name: tsugou-kun-nginx
