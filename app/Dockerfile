@@ -11,15 +11,16 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # psycopg2のインストール
-RUN apk update \
-    && apk add --virtual build-deps gcc python3-dev musl-dev \
-    && apk add postgresql-dev \
-    && pip install psycopg2 \
-    && apk del build-deps
+RUN apk update && \
+    apk add --no-cache --virtual .build-deps \
+        python3 \
+        postgresql-libs \
+        gcc python3-dev musl-dev postgresql-dev 
+#    apk --purge del .build-deps
 
 # Pipenvをインストール
 RUN pip install --upgrade pip \
-&& pip install pipenv
+    && pip install pipenv
 
 # ホストのpipfileをコンテナの作業ディレクトリにコピー
 COPY ./Pipfile /usr/src/app/Pipfile
