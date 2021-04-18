@@ -67,7 +67,7 @@ services:
   tsugou-kun-nginx:
     container_name: tsugou-kun-nginx
     build:
-      context: ./nginx
+      context: ./app/nginx
     environment:
       VIRTUAL_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
       LETSENCRYPT_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
