@@ -29,5 +29,3 @@ RUN pipenv install --skip-lock --system --dev
 
 # ホストのカレントディレクトリ（現在はappディレクトリ）を作業ディレクトリにコピー
 COPY . /usr/src/app/
-# このファイルが存在するとローカル環境とみなされるため削除
-RUN rm /usr/src/app/app/local_settings.py

@@ -141,9 +141,10 @@ $ cd /opt/app/
 $ git clone https://github.com/isoittech/tsugou-kun.git
 $ cd /opt/app/tsugou-kun/app
 
-$ docker-compose build
+# 下記ファイルがあるとローカル環境用動作になるから削除
+$ rm app/app/local_settings.py
+$ docker-compose up -d --build
 $ docker-compose exec django python manage.py migrate --noinput
-$ docker-compose up -d
 
 ※ログ確認
 $ docker-compose logs

@@ -144,9 +144,17 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 try:
     from .local_settings import *
 except ImportError:
-    print("===================================================")
+    print("=" * 100)
     print("Not DEBUG MODE.")
-    print("===================================================")
+    print("=" * 100)
+
+import pprint
+print("=" * 100)
+print("-" * 50)
+print("DATABASE CONFIG")
+print("-" * 50)
+pprint.pprint(DATABASES, sort_dicts = False)
+print("=" * 100)
 
 if not DEBUG:
     SECRET_KEY = os.environ['SECRET_KEY']
