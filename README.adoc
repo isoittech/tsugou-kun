@@ -139,7 +139,7 @@ admin.site.register(<<追加するモデルクラス名>>)
 ※sudo権限あり、docker/docker-composeインストール済前提
 $ cd /opt/app/
 $ git clone https://github.com/isoittech/tsugou-kun.git
-$ cd /opt/app/tsugou-kun/app
+$ cd /opt/app
 
 # 下記ファイルがあるとローカル環境用動作になるから削除
 $ rm app/app/local_settings.py
