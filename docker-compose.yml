@@ -13,6 +13,7 @@ services:
     # データを永続化させる場合の設定。`host:container`でパスを記載
     volumes:
       - ./app/:/usr/src/app/
+      - ./app/home/:/usr/src/app/staticfiles/
     # 開放するポートを指定。`host:container`でポートを記載
     expose:
       - 8000
