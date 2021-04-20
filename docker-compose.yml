@@ -19,8 +19,8 @@ services:
     # 環境変数を指定
     environment:
       - DEBUG=0
-      - SECRET_KEY='v5n+o-2t6rk18xc_2s2-py#+c)uh)wjj6t_(1hmxi72co3)589'
-      - DATABASE_ENGINE='django.db.backends.postgresql_psycopg2'
+      - SECRET_KEY=v5n+o-2t6rk18xc_2s2-py#+c)uh)wjj6t_(1hmxi72co3)589
+      - DATABASE_ENGINE=django.db.backends.postgresql_psycopg2
       - DATABASE_DB=tsugoukun
       - DATABASE_USER=postgres
       - DATABASE_PASSWORD=postgres
