@@ -153,7 +153,11 @@ print("=" * 100)
 print("-" * 50)
 print("DATABASE CONFIG")
 print("-" * 50)
-pprint.pprint(DATABASES, sort_dicts = False)
+pprint.pprint(DATABASES)
+print("-" * 50)
+print("OTHER CONFIG")
+print("-" * 50)
+pprint.pprint(f"STATIC_ROOT:{STATIC_ROOT}")
 print("=" * 100)
 
 if not DEBUG:
