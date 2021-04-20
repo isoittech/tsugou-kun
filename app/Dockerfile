@@ -11,12 +11,11 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
 # psycopg2のインストール
-RUN apk update && \
-    apk add --no-cache --virtual .build-deps \
-        python3 \
-        postgresql-libs \
-        gcc python3-dev musl-dev postgresql-dev 
-#    apk --purge del .build-deps
+RUN apk update \
+    && apk add --virtual build-deps gcc python3-dev musl-dev \
+    && apk add postgresql-dev \
+    && pip install psycopg2
+#    && apk del build-deps
 
 # Pipenvをインストール
 RUN pip install --upgrade pip \
@@ -31,4 +30,4 @@ RUN pipenv install --skip-lock --system --dev
 # ホストのカレントディレクトリ（現在はappディレクトリ）を作業ディレクトリにコピー
 COPY . /usr/src/app/
 # このファイルが存在するとローカル環境とみなされるため削除
-#RUN rm -f /usr/src/app/app/local_settings.py
+RUN rm /usr/src/app/app/local_settings.py

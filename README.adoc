@@ -137,25 +137,22 @@ admin.site.register(<<追加するモデルクラス名>>)
 
 ```shell
 ※sudo権限あり、docker/docker-composeインストール済前提
-$ mkdir -p /opt/app/tsugou-kun/app
----
-上記ディレクトリに<tsugou-kun>/ディレクトリ配下を全てコピー（.で始まるディレクトリを除く）
----
-$ cd /opt/app/tsugou-kun
-$ mv app/docker-compose.yml ./
+$ cd /opt/app/
+$ git clone https://github.com/isoittech/tsugou-kun.git
+$ cd /opt/app/tsugou-kun/app
 
-$ docker-compose down -v
-$ docker-compose up -d --build
+$ docker-compose build
 $ docker-compose exec django python manage.py migrate --noinput
+$ docker-compose up -d
 
 ※ログ確認
 $ docker-compose logs
 ※ログインして確認
-$ docker-compose exec <サービス名> /bin/bash
+$ docker-compose exec <サービス名> /bin/sh
 ※再起動
 $ docker-compose restart
 ※一旦イメージ掃除
-$ docker-compose down --rmi all
+$ docker-compose down --rmi all --volumes --remove-orphans
 $ docker-compose rm <<container>>
     rmオプション
       -f, --force   Don't ask to confirm removal

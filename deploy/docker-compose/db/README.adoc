@@ -1,9 +1,0 @@
-= Nuxtbootのデータベースの扱いについて
-
-== memo
-
-=== 新たにデータベースを作成する時
-
-タスクバー内のH2インジケーターのアイコンを右クリック　→　create new databaseを選択。 データベース作成のウィンドウが表示されるから、任意のパスを入力して「Create」を選択。
-
-https://qiita.com/cyclengi/items/a48e6ab8668aa18399eb
