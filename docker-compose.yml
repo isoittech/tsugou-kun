@@ -70,8 +70,8 @@ services:
     build:
       context: ./nginx
     environment:
-      VIRTUAL_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
-      LETSENCRYPT_HOST: stg.tsugoukun.0g0.jp # カンマ区切り指定
+      VIRTUAL_HOST: django.tsugoukun.0g0.jp # カンマ区切り指定
+      LETSENCRYPT_HOST: django.tsugoukun.0g0.jp # カンマ区切り指定
       LETSENCRYPT_EMAIL: isoittech@gmail.com
     volumes:
       - ./static:/static
