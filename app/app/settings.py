@@ -120,7 +120,6 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-STATIC_URL = '/static/'
 
 LOGGING = {
     'version': 1,
@@ -139,7 +138,11 @@ LOGGING = {
     }
 }
 
+STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'home/static/'), # 開発中に使っていたstaticディレクトリ
+)
 
 try:
     from .local_settings import *
@@ -158,6 +161,8 @@ print("-" * 50)
 print("OTHER CONFIG")
 print("-" * 50)
 pprint.pprint(f"STATIC_ROOT:{STATIC_ROOT}")
+pprint.pprint(f"STATIC_URL:{STATIC_URL}")
+pprint.pprint(f"STATICFILES_DIRS:{STATICFILES_DIRS}")
 print("=" * 100)
 
 if not DEBUG:
