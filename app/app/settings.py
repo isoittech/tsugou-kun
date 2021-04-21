@@ -159,7 +159,6 @@ print("OTHER CONFIG")
 print("-" * 50)
 pprint.pprint(f"STATIC_ROOT:{STATIC_ROOT}")
 pprint.pprint(f"STATIC_URL:{STATIC_URL}")
-pprint.pprint(f"STATICFILES_DIRS:{STATICFILES_DIRS}")
 print("=" * 100)
 
 if not DEBUG:
