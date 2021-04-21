@@ -28,7 +28,6 @@ services:
     depends_on:
       - postgres
       - waitfordb
-    restart: always
     # コンテナビルド後の一回のみ実行コマンド省略化・・・失敗
     # volumes:
     #   - ./app/container_init.sh:/tmp/container_init.sh # container-init.shをコンテナから参照できるようにするため
@@ -57,7 +56,6 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=tsugoukun
-    restart: always
 
   #############################################
   # DB待機処理
@@ -67,7 +65,6 @@ services:
     depends_on:
       - postgres
     command: postgres:5432
-    restart: always
 
   #############################################
   # Webサーバ
@@ -87,7 +84,6 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - django
-    restart: always
 
 networks:
   default:
