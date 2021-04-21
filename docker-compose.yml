@@ -29,14 +29,14 @@ services:
       - postgres
       - waitfordb
     # コンテナビルド後の一回のみ実行コマンド省略化・・・失敗
-    # volumes:
-    #   - ./app/container_init.sh:/tmp/container_init.sh # container-init.shをコンテナから参照できるようにするため
-    # # サービス起動後に入力されるコマンドを設定
-    # entrypoint: >
-    #   sh -c "
-    #     sh /tmp/container_init.sh &&
-    #     python3
-    #   "
+    volumes:
+      - ./app/container_init.sh:/tmp/container_init.sh
+    # サービス起動後に入力されるコマンドを設定
+    entrypoint: >
+      sh -c "
+        sh /tmp/container_init.sh &&
+        gunicorn app.wsgi:application --bind 0.0.0.0:8000
+      "
 
   #############################################
   # DBサーバ
