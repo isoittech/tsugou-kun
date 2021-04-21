@@ -1,5 +1,7 @@
 import os
 
+# settings.pyの絶対パスを取って、親の親をBASE_DIRにしている
+# settings.pyの親の親 = /path/to/projecthome/
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!

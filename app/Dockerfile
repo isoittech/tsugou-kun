@@ -8,6 +8,9 @@ WORKDIR /usr/src/app
 # Pythonがpyc filesとdiscへ書き込むことを防ぐ
 ENV PYTHONDONTWRITEBYTECODE 1
 # Pythonが標準入出力をバッファリングすることを防ぐ
+# PYTHONUNBUFFEREDは、バッファが溜まってから出力するのを避けるための記述。
+# パフォーマンスの観点からはバッファが溜まってからの出力の方が良いが、
+# 素早い反応を求めるため、設定を記述する。
 ENV PYTHONUNBUFFERED 1
 
 # psycopg2のインストール
