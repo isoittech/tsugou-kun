@@ -7,9 +7,6 @@ services:
   django:
     # appディレクトリの中から`Dockerfile`を探す
     build: ./app
-    # サービス起動後に入力されるコマンドを設定
-    # command: python manage.py runserver 0.0.0.0:8000
-    command: gunicorn app.wsgi:application --bind 0.0.0.0:8000
     # データを永続化させる場合の設定。`host:container`でパスを記載
     volumes:
       - ./app/:/usr/src/app/
@@ -31,6 +28,15 @@ services:
     depends_on:
       - postgres
       - waitfordb
+    restart: always
+    volumes:
+      - ./app/container_init.sh:/tmp/container_init.sh # container-init.shをコンテナから参照できるようにするため
+    # サービス起動後に入力されるコマンドを設定
+    entrypoint: >
+    sh -c "
+      sh /tmp/container_init.sh &&
+      python3
+    "
 
   #############################################
   # DBサーバ
@@ -50,6 +56,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
       - POSTGRES_DB=tsugoukun
+    restart: always
 
   #############################################
   # DB待機処理
@@ -59,6 +66,7 @@ services:
     depends_on:
       - postgres
     command: postgres:5432
+    restart: always
 
   #############################################
   # Webサーバ
@@ -78,6 +86,7 @@ services:
       - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - django
+    restart: always
 
 networks:
   default:
